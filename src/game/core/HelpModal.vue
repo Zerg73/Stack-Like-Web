@@ -1,0 +1,182 @@
+<script setup lang="ts">
+import { useGameStore } from '@/stores/gameStore'
+import { gameConfig } from '@/config/game'
+
+const gameStore = useGameStore()
+
+const shortcutList = [
+  { action: 'zoomIn', key: gameConfig.shortcuts.zoomIn, desc: '放大' },
+  { action: 'zoomOut', key: gameConfig.shortcuts.zoomOut, desc: '缩小' },
+  { action: 'zoomReset', key: gameConfig.shortcuts.zoomReset, desc: '重置缩放' },
+  { action: 'panUp', key: gameConfig.shortcuts.panUp, desc: '上移' },
+  { action: 'panDown', key: gameConfig.shortcuts.panDown, desc: '下移' },
+  { action: 'panLeft', key: gameConfig.shortcuts.panLeft, desc: '左移' },
+  { action: 'panRight', key: gameConfig.shortcuts.panRight, desc: '右移' },
+  { action: 'rotateView', key: gameConfig.shortcuts.rotateView, desc: '旋转视角' },
+  { action: 'togglePause', key: gameConfig.shortcuts.togglePause === ' ' ? '空格' : gameConfig.shortcuts.togglePause, desc: '暂停/继续' }
+]
+</script>
+
+<template>
+  <Teleport to="body">
+    <div v-if="gameStore.isHelpOpen" class="modal-overlay" @click.self="gameStore.toggleHelp()">
+      <div class="help-modal">
+        <div class="modal-header">
+          <h2>快捷键说明</h2>
+          <button class="close-btn" @click="gameStore.toggleHelp()">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <table class="shortcut-table">
+            <thead>
+              <tr>
+                <th>快捷键</th>
+                <th>功能</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in shortcutList" :key="item.action">
+                <td><kbd>{{ item.key }}</kbd></td>
+                <td>{{ item.desc }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="hint-section">
+            <h3>鼠标操作</h3>
+            <ul>
+              <li>滚轮：缩放视口（按住 Ctrl 效果更好）</li>
+              <li>拖拽空白区域：平移视口</li>
+              <li>右键拖拽：旋转视角</li>
+              <li>双击方块：打开详情窗口</li>
+              <li>长按方块（移动端）：打开详情窗口</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.help-modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--color-danger);
+}
+
+.modal-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+
+.shortcut-table th,
+.shortcut-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shortcut-table th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.shortcut-table td {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+kbd {
+  display: inline-block;
+  padding: 4px 8px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--color-primary);
+}
+
+.hint-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 12px;
+}
+
+.hint-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hint-section li {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+}
+
+.hint-section li:last-child {
+  border-bottom: none;
+}
+</style>

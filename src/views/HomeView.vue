@@ -51,8 +51,12 @@ function cancelDelete() {
   pendingDeleteSlot.value = null
 }
 
+const emit = defineEmits<{
+  startGame: [slotId: string]
+}>()
+
 function handleStartGame(slot: SaveSlot) {
-  console.log('Starting game with slot:', slot.id)
+  emit('startGame', slot.id)
 }
 
 function triggerImport() {
