@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { SaveSlot } from '@/stores/saveStore'
+
+const { t } = useI18n()
 
 defineProps<{
   slot: SaveSlot
@@ -15,19 +18,19 @@ const emit = defineEmits<{
     <div class="modal-overlay" @click.self="emit('close')">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>MOD 配置</h2>
+          <h2>{{ t('modConfig.title') }}</h2>
           <button class="close-btn" @click="emit('close')">✕</button>
         </div>
 
         <div class="modal-body">
-          <p class="slot-name">存档: {{ slot.name }}</p>
+          <p class="slot-name">{{ t('modConfig.saveLabel') }}: {{ slot.name }}</p>
           <div class="mod-list">
-            <p class="empty-hint">暂无可用MOD</p>
+            <p class="empty-hint">{{ t('modConfig.noMods') }}</p>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button class="cancel-btn" @click="emit('close')">关闭</button>
+          <button class="cancel-btn" @click="emit('close')">{{ t('common.close') }}</button>
         </div>
       </div>
     </div>

@@ -1,0 +1,90 @@
+{
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "home": {
+    "title": "STACK LIKE",
+    "subtitle": "Stacklands",
+    "importSave": "Import Save",
+    "exportSave": "Export Save",
+    "newSlot": "New Slot"
+  },
+  "saveSlot": {
+    "modConfig": "MOD Config",
+    "deleteSave": "Delete Save",
+    "startGame": "Start Game",
+    "modCount": "{count} MOD(s)",
+    "noMod": "No MOD"
+  },
+  "confirmModal": {
+    "deleteTitle": "Delete Save",
+    "deleteMessage": "Are you sure you want to delete save \"{name}\"? This action cannot be undone."
+  },
+  "modConfig": {
+    "title": "MOD Configuration",
+    "saveLabel": "Save",
+    "noMods": "No MODs available"
+  },
+  "help": {
+    "title": "Keyboard Shortcuts",
+    "shortcut": "Shortcut",
+    "function": "Function",
+    "mouseOperation": "Mouse Operations",
+    "actions": {
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "zoomReset": "Reset Zoom",
+      "panUp": "Pan Up",
+      "panDown": "Pan Down",
+      "panLeft": "Pan Left",
+      "panRight": "Pan Right",
+      "rotateView": "Rotate View",
+      "togglePause": "Pause/Resume"
+    },
+    "mouseHints": {
+      "scroll": "Scroll: Zoom viewport (hold Ctrl for better control)",
+      "dragViewport": "Drag empty area: Pan viewport",
+      "rightDrag": "Right-click drag: Rotate view",
+      "doubleClick": "Double-click card: Open details",
+      "longPress": "Long press (mobile): Open details"
+    }
+  },
+  "cardTypes": {
+    "material": "Material",
+    "unit": "Unit",
+    "building": "Building"
+  },
+  "cardItems": {
+    "wood": "Wood",
+    "stone": "Stone",
+    "wheat": "Wheat",
+    "apple": "Apple",
+    "gem": "Gem",
+    "brick": "Brick",
+    "furniture": "Furniture",
+    "tree": "Tree",
+    "farmer": "Farmer",
+    "swordsman": "Swordsman",
+    "archer": "Archer",
+    "shieldBearer": "Shield Bearer",
+    "warhorse": "Warhorse",
+    "werewolf": "Werewolf",
+    "mage": "Mage",
+    "princess": "Princess",
+    "cottage": "Cottage",
+    "castle": "Castle",
+    "church": "Church",
+    "tower": "Tower",
+    "temple": "Temple",
+    "barracks": "Barracks",
+    "barn": "Barn",
+    "attic": "Attic"
+  },
+  "locale": {
+    "switchLanguage": "Switch Language",
+    "zhCN": "简体中文",
+    "enUS": "English"
+  }
+}

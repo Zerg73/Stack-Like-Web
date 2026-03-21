@@ -1,15 +1,22 @@
 <script setup lang="ts">
 /**
  * 卡牌堆叠组件
+ * Card Stack Component
  * 
  * 显示一堆堆叠的卡牌，处理堆叠的渲染和交互
+ * Display a stack of cards, handle rendering and interaction
  */
 
 import { computed } from 'vue'
 import type { CardStack as CardStackType } from '@/game/types'
 import { StackClickEvent, StackDragStartEvent } from '@/game/events'
-import { STACK_OFFSET } from '@/game/engine'
 import Card from './Card.vue'
+
+/** 名字栏高度 / Name strip height */
+const NAME_STRIP_HEIGHT = 32
+
+/** 内容区高度 / Content area height */
+const CONTENT_HEIGHT = 75
 
 const props = defineProps<{
   stack: CardStackType
@@ -26,12 +33,20 @@ const emit = defineEmits<{
 }>()
 
 // 堆叠位置（使用最底层卡牌的位置，即 cards[0]）
+// Stack position (using bottom card position, cards[0])
+// 卡牌存储的是世界坐标，CSS 定位直接使用世界坐标
+// Card stores world coordinates, CSS positioning uses world coordinates directly
 const stackStyle = computed(() => {
   if (props.stack.cards.length === 0) return {}
 
   const bottomCard = props.stack.cards[0]
+  
   // 拖拽中的堆叠应该显示在最上层
+  // Dragging stack should be on top
   const baseZIndex = props.isDragging ? 10000 : bottomCard.y
+  
+  // CSS 坐标 = 世界坐标（地图就是 ground 区域，没有偏移）
+  // CSS coordinate = world coordinate (map is ground area, no offset)
   return {
     left: `${bottomCard.x}px`,
     bottom: `${bottomCard.y}px`,
@@ -39,12 +54,42 @@ const stackStyle = computed(() => {
   }
 })
 
-// 计算每张卡牌的偏移样式
-// 数组顺序：index=0 是最底层卡牌，index 越大越靠上
-// 原点在左下角，上层卡牌的 offsetY 为负值（向下偏移）
-function getCardStyle(index: number) {
+/**
+ * 计算每张卡牌的偏移样式
+ * Calculate offset style for each card
+ * 
+ * 锚点在卡牌左下角，名字栏在卡牌顶部
+ * Anchor at bottom-left corner, name strip at top of card
+ * 
+ * CSS bottom: 正值向上，负值向下
+ * CSS bottom: positive = up, negative = down
+ * 
+ * 渲染顺序（从下到上）：
+ * Rendering order (bottom to top):
+ * - card0 名字栏: bottom=0
+ * - card1 名字栏: bottom=-32
+ * - card2 名字栏: bottom=-64 (顶层)
+ * - card2 内容区: bottom=-139 (顶层，向下延伸75px)
+ * 
+ * 计算公式：
+ * Formula:
+ * - 非顶层卡牌: bottom = -index * NAME_STRIP_HEIGHT
+ * - 顶层卡牌: bottom = -index * NAME_STRIP_HEIGHT - CONTENT_HEIGHT
+ *   (因为内容区在名字栏下方，需要向下偏移)
+ */
+function getCardStyle(index: number, isTop: boolean) {
+  // 基础偏移：每张卡牌的名字栏高度（负值向下）
+  // Base offset: name strip height (negative = down in CSS)
+  let bottom = -index * NAME_STRIP_HEIGHT
+  
+  // 顶层卡牌需要额外向下偏移内容区高度
+  // Top card needs extra offset for content area
+  if (isTop) {
+    bottom -= CONTENT_HEIGHT
+  }
+  
   return {
-    bottom: `${-index * STACK_OFFSET}px`,
+    bottom: `${bottom}px`,
     zIndex: index + 1  // index 越大 zIndex 越大，显示在上层
   }
 }
@@ -70,13 +115,14 @@ function handleCardDragStart(e: MouseEvent, cardIndex: number) {
       'can-drop': canDrop
     }"
     :style="stackStyle"
+    :data-stack-id="stack.id"
     @click.stop="handleStackClick"
   >
     <div
       v-for="(card, index) in stack.cards"
       :key="card.id"
       class="stack-item"
-      :style="getCardStyle(index)"
+      :style="getCardStyle(index, index === stack.cards.length - 1)"
     >
       <Card
         :card="card"
@@ -118,5 +164,6 @@ function handleCardDragStart(e: MouseEvent, cardIndex: number) {
 .stack-item {
   position: absolute;
   left: 0;
+  bottom: 0;
 }
 </style>

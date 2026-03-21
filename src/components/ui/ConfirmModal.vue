@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 defineProps<{
   title: string
   message: string
@@ -26,10 +30,10 @@ const emit = defineEmits<{
 
         <div class="modal-footer">
           <button class="cancel-btn" @click="emit('cancel')">
-            {{ cancelText || '取消' }}
+            {{ cancelText || t('common.cancel') }}
           </button>
           <button class="confirm-btn" @click="emit('confirm')">
-            {{ confirmText || '确定' }}
+            {{ confirmText || t('common.confirm') }}
           </button>
         </div>
       </div>

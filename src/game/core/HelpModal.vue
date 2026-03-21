@@ -1,20 +1,33 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useGameStore } from '@/stores/gameStore'
 import { gameConfig } from '@/config/game'
 
+const { t } = useI18n()
 const gameStore = useGameStore()
 
-const shortcutList = [
-  { action: 'zoomIn', key: gameConfig.shortcuts.zoomIn, desc: '放大' },
-  { action: 'zoomOut', key: gameConfig.shortcuts.zoomOut, desc: '缩小' },
-  { action: 'zoomReset', key: gameConfig.shortcuts.zoomReset, desc: '重置缩放' },
-  { action: 'panUp', key: gameConfig.shortcuts.panUp, desc: '上移' },
-  { action: 'panDown', key: gameConfig.shortcuts.panDown, desc: '下移' },
-  { action: 'panLeft', key: gameConfig.shortcuts.panLeft, desc: '左移' },
-  { action: 'panRight', key: gameConfig.shortcuts.panRight, desc: '右移' },
-  { action: 'rotateView', key: gameConfig.shortcuts.rotateView, desc: '旋转视角' },
-  { action: 'togglePause', key: gameConfig.shortcuts.togglePause === ' ' ? '空格' : gameConfig.shortcuts.togglePause, desc: '暂停/继续' }
-]
+// 快捷键列表
+const shortcutList = computed(() => [
+  { action: 'zoomIn', key: gameConfig.shortcuts.zoomIn, desc: t('help.actions.zoomIn') },
+  { action: 'zoomOut', key: gameConfig.shortcuts.zoomOut, desc: t('help.actions.zoomOut') },
+  { action: 'zoomReset', key: gameConfig.shortcuts.zoomReset, desc: t('help.actions.zoomReset') },
+  { action: 'panUp', key: gameConfig.shortcuts.panUp, desc: t('help.actions.panUp') },
+  { action: 'panDown', key: gameConfig.shortcuts.panDown, desc: t('help.actions.panDown') },
+  { action: 'panLeft', key: gameConfig.shortcuts.panLeft, desc: t('help.actions.panLeft') },
+  { action: 'panRight', key: gameConfig.shortcuts.panRight, desc: t('help.actions.panRight') },
+  { action: 'rotateView', key: gameConfig.shortcuts.rotateView, desc: t('help.actions.rotateView') },
+  { action: 'togglePause', key: gameConfig.shortcuts.togglePause === ' ' ? 'Space' : gameConfig.shortcuts.togglePause, desc: t('help.actions.togglePause') }
+])
+
+// 鼠标操作提示列表
+const mouseHints = computed(() => [
+  t('help.mouseHints.scroll'),
+  t('help.mouseHints.dragViewport'),
+  t('help.mouseHints.rightDrag'),
+  t('help.mouseHints.doubleClick'),
+  t('help.mouseHints.longPress')
+])
 </script>
 
 <template>
@@ -22,7 +35,7 @@ const shortcutList = [
     <div v-if="gameStore.isHelpOpen" class="modal-overlay" @click.self="gameStore.toggleHelp()">
       <div class="help-modal">
         <div class="modal-header">
-          <h2>快捷键说明</h2>
+          <h2>{{ t('help.title') }}</h2>
           <button class="close-btn" @click="gameStore.toggleHelp()">✕</button>
         </div>
 
@@ -30,8 +43,8 @@ const shortcutList = [
           <table class="shortcut-table">
             <thead>
               <tr>
-                <th>快捷键</th>
-                <th>功能</th>
+                <th>{{ t('help.shortcut') }}</th>
+                <th>{{ t('help.function') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -43,13 +56,9 @@ const shortcutList = [
           </table>
 
           <div class="hint-section">
-            <h3>鼠标操作</h3>
+            <h3>{{ t('help.mouseOperation') }}</h3>
             <ul>
-              <li>滚轮：缩放视口（按住 Ctrl 效果更好）</li>
-              <li>拖拽空白区域：平移视口</li>
-              <li>右键拖拽：旋转视角</li>
-              <li>双击方块：打开详情窗口</li>
-              <li>长按方块（移动端）：打开详情窗口</li>
+              <li v-for="(hint, index) in mouseHints" :key="index">{{ hint }}</li>
             </ul>
           </div>
         </div>

@@ -9,7 +9,9 @@ import { gameConfig } from '@/config/game'
 import { canStackTypes } from '@/config/cardTypes'
 import type { GameCard, CardStack } from '@/game/types'
 
-/** 堆叠中每张卡牌的垂直偏移量（像素） */
+/** 堆叠中每张卡牌的垂直偏移量（像素）/ Vertical offset per card in stack (pixels) */
+/** 等于名字栏高度 32px，确保堆叠时每张卡牌的名字栏刚好露出 */
+/** Equal to name strip height 32px, ensuring each card's name strip is just visible */
 export const STACK_OFFSET = 32
 
 /**
@@ -32,8 +34,8 @@ export class StackModule {
   private readonly _hitPadding: number = 20
   
   constructor() {
-    this._cardWidth = gameConfig.grid.cellWidth
-    this._cardHeight = gameConfig.grid.cellHeight
+    this._cardWidth = gameConfig.card.width
+    this._cardHeight = gameConfig.card.height
   }
   
   // ========== 堆叠创建 ==========
@@ -45,6 +47,7 @@ export class StackModule {
    * @param typeId 卡牌类型 ID
    * @param name 卡牌名称
    * @param emoji 卡牌表情
+   * @param nameKey i18n key（用于翻译）
    * @returns 新创建的堆叠
    */
   createStack(
@@ -52,7 +55,8 @@ export class StackModule {
     y: number,
     typeId: string,
     name: string,
-    emoji: string
+    emoji: string,
+    nameKey?: string
   ): CardStack {
     const stackId = `stack_${Date.now()}`
     const cardId = `card_${Date.now()}`
@@ -61,6 +65,7 @@ export class StackModule {
       id: cardId,
       typeId,
       name,
+      nameKey: nameKey || '',
       emoji,
       x,
       y,
@@ -80,13 +85,15 @@ export class StackModule {
    * @param typeId 卡牌类型 ID
    * @param name 卡牌名称
    * @param emoji 卡牌表情
+   * @param nameKey i18n key（用于翻译）
    * @returns 新创建的卡牌
    */
   addCardToStack(
     stack: CardStack,
     typeId: string,
     name: string,
-    emoji: string
+    emoji: string,
+    nameKey?: string
   ): GameCard | null {
     if (stack.cards.length === 0) return null
     
@@ -95,6 +102,7 @@ export class StackModule {
       id: `card_${Date.now()}`,
       typeId,
       name,
+      nameKey: nameKey || '',
       emoji,
       x: bottomCard.x,
       y: bottomCard.y,  // 所有卡牌的 Y 相同，渲染偏移由 CSS 处理

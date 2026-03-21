@@ -25,15 +25,11 @@ export const useGameStore = defineStore('game', () => {
 
   // ========== 拖拽状态（用于 UI 反馈） ==========
   const drag = ref<DragState>({
-    isDragging: false,
     isPanning: false,
-    isSeparating: false,
     startX: 0,
     startY: 0,
     startTranslateX: 0,
-    startTranslateY: 0,
-    draggedCardIndex: -1,
-    sourceStackId: null
+    startTranslateY: 0
   })
 
   // ========== 地图数据 ==========
@@ -55,8 +51,20 @@ export const useGameStore = defineStore('game', () => {
 
   // ========== 计算属性 ==========
   
+  /** 是否正在拖拽 */
+  const isDragging = computed(() => engine.isDragging)
+  
   /** 当前拖拽的堆叠 ID */
   const draggingStackId = computed(() => engine.draggingStackId)
+  
+  /** 是否是分离操作 */
+  const isSeparating = computed(() => engine.isSeparating)
+  
+  /** 被拖拽的卡牌索引 */
+  const draggedCardIndex = computed(() => engine.draggedCardIndex)
+  
+  /** 源堆叠 ID */
+  const sourceStackId = computed(() => engine.sourceStackId)
   
   /** 视口状态 */
   const viewport = computed(() => ({
@@ -76,6 +84,16 @@ export const useGameStore = defineStore('game', () => {
       }
     }
     return cards
+  })
+
+  /** 堆叠 ID 到堆叠对象的映射（用于 O(1) 查找） */
+  /** Stack ID to stack object mapping (for O(1) lookup) */
+  const stackMap = computed(() => {
+    const map = new Map<string, CardStack>()
+    for (const stack of currentMap.value.stacks) {
+      map.set(stack.id, stack)
+    }
+    return map
   })
 
   // ========== 缩放控制 ==========
@@ -159,9 +177,6 @@ export const useGameStore = defineStore('game', () => {
     if (!stack) return null
     
     selectStack(stackId)
-    drag.value.isDragging = true
-    drag.value.draggedCardIndex = cardIndex
-    drag.value.sourceStackId = stackId
     
     // 如果需要分离（拖拽的不是底层卡牌）
     if (cardIndex > 0 && cardIndex < stack.cards.length) {
@@ -170,34 +185,20 @@ export const useGameStore = defineStore('game', () => {
       if (newStack) {
         // 将新堆叠添加到地图
         currentMap.value.stacks.push(newStack)
-        
-        // 更新拖拽状态
-        drag.value.isSeparating = true
-        drag.value.sourceStackId = newStack.id
         selectStack(newStack.id)
         
-        // 手动更新引擎的拖拽状态
-        engine.drag.startDrag(newStack, -1, screenX, screenY)
-        
-        return { x: newStack.cards[0].x, y: newStack.cards[0].y }
+        // 调用引擎开始拖拽，标记为分离操作
+        return engine.startDrag(newStack, -1, screenX, screenY, true)
       }
     } else {
-      // 拖拽整个堆叠
-      drag.value.isSeparating = false
-      
-      // 调用引擎开始拖拽
-      const result = engine.startDrag(stack, -1, screenX, screenY)
-      return result
+      // 拖拽整个堆叠，调用引擎开始拖拽
+      return engine.startDrag(stack, -1, screenX, screenY, false)
     }
     
     return null
   }
 
   function endStackDrag() {
-    drag.value.isDragging = false
-    drag.value.isSeparating = false
-    drag.value.draggedCardIndex = -1
-    drag.value.sourceStackId = null
     dropTarget.value = null
     canDropOnTarget.value = false
     engine.cancelDrag()
@@ -205,11 +206,18 @@ export const useGameStore = defineStore('game', () => {
 
   /**
    * 移动堆叠到指定位置
+   * Move stack to specified position
+   * 
+   * @param stackId 堆叠 ID / Stack ID
+   * @param x 世界坐标 X / World coordinate X
+   * @param y 世界坐标 Y / World coordinate Y
    */
   function moveStack(stackId: string, x: number, y: number) {
     const stack = currentMap.value.stacks.find(s => s.id === stackId)
     if (stack) {
-      engine.moveStack(stack, x, y)
+      // 限制位置在地图边界内 / Clamp position within map boundaries
+      const clampedPos = engine.clampCardPosition(x, y)
+      engine.moveStack(stack, clampedPos.x, clampedPos.y)
     }
   }
 
@@ -217,7 +225,7 @@ export const useGameStore = defineStore('game', () => {
    * 更新拖拽目标（用于视觉反馈）
    */
   function updateDropTarget(screenX: number, screenY: number) {
-    const result = engine.findDropTarget(currentMap.value.stacks, screenX, screenY)
+    const result = engine.findDropTarget(screenX, screenY, stackMap.value)
     dropTarget.value = result.target
     canDropOnTarget.value = result.canDrop
   }
@@ -228,7 +236,7 @@ export const useGameStore = defineStore('game', () => {
   function handleCardDrop(screenX: number, screenY: number) {
     if (!engine.draggingStackId) return
     
-    const result = engine.endDrag(currentMap.value.stacks, screenX, screenY)
+    const result = engine.endDrag(stackMap.value, screenX, screenY)
     
     // 如果是合并操作，需要从地图中移除源堆叠
     if (result.type === 'merge' && result.sourceStackId) {
@@ -243,8 +251,8 @@ export const useGameStore = defineStore('game', () => {
 
   // ========== 卡牌管理 ==========
   
-  function createStack(x: number, y: number, typeId: string, name: string, emoji: string): CardStack {
-    const stack = engine.createStack(x, y, typeId, name, emoji)
+  function createStack(x: number, y: number, typeId: string, name: string, emoji: string, nameKey?: string): CardStack {
+    const stack = engine.createStack(x, y, typeId, name, emoji, nameKey)
     currentMap.value.stacks.push(stack)
     return stack
   }
@@ -324,10 +332,19 @@ export const useGameStore = defineStore('game', () => {
     currentMap,
     isPaused,
     isHelpOpen,
+    
+    // 拖拽业务状态（通过计算属性）
+    isDragging,
+    isSeparating,
+    draggedCardIndex,
+    sourceStackId,
     draggingStackId,
+    
+    // UI 状态
     dropTarget,
     canDropOnTarget,
     selectedCards,
+    stackMap,
     
     // 缩放
     setScale,

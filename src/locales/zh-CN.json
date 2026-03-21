@@ -1,0 +1,90 @@
+{
+  "common": {
+    "confirm": "确定",
+    "cancel": "取消",
+    "close": "关闭"
+  },
+  "home": {
+    "title": "STACK LIKE",
+    "subtitle": "堆叠大陆",
+    "importSave": "导入存档",
+    "exportSave": "导出存档",
+    "newSlot": "新建存档"
+  },
+  "saveSlot": {
+    "modConfig": "MOD配置",
+    "deleteSave": "删除存档",
+    "startGame": "开始游戏",
+    "modCount": "{count} 个MOD",
+    "noMod": "无MOD"
+  },
+  "confirmModal": {
+    "deleteTitle": "删除存档",
+    "deleteMessage": "确定要删除存档「{name}」吗？此操作不可恢复。"
+  },
+  "modConfig": {
+    "title": "MOD 配置",
+    "saveLabel": "存档",
+    "noMods": "暂无可用MOD"
+  },
+  "help": {
+    "title": "快捷键说明",
+    "shortcut": "快捷键",
+    "function": "功能",
+    "mouseOperation": "鼠标操作",
+    "actions": {
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "zoomReset": "重置缩放",
+      "panUp": "上移",
+      "panDown": "下移",
+      "panLeft": "左移",
+      "panRight": "右移",
+      "rotateView": "旋转视角",
+      "togglePause": "暂停/继续"
+    },
+    "mouseHints": {
+      "scroll": "滚轮：缩放视口（按住 Ctrl 效果更好）",
+      "dragViewport": "拖拽空白区域：平移视口",
+      "rightDrag": "右键拖拽：旋转视角",
+      "doubleClick": "双击方块：打开详情窗口",
+      "longPress": "长按方块（移动端）：打开详情窗口"
+    }
+  },
+  "cardTypes": {
+    "material": "素材",
+    "unit": "单位",
+    "building": "建筑"
+  },
+  "cardItems": {
+    "wood": "木材",
+    "stone": "石材",
+    "wheat": "小麦",
+    "apple": "苹果",
+    "gem": "宝石",
+    "brick": "砖块",
+    "furniture": "家具",
+    "tree": "树木",
+    "farmer": "农民",
+    "swordsman": "剑士",
+    "archer": "弓兵",
+    "shieldBearer": "盾牌兵",
+    "warhorse": "战马",
+    "werewolf": "狼人",
+    "mage": "法师",
+    "princess": "公主",
+    "cottage": "小屋",
+    "castle": "城堡",
+    "church": "教堂",
+    "tower": "塔楼",
+    "temple": "神庙",
+    "barracks": "兵营",
+    "barn": "谷仓",
+    "attic": "阁楼"
+  },
+  "locale": {
+    "switchLanguage": "切换语言",
+    "zhCN": "简体中文",
+    "enUS": "English"
+  }
+}

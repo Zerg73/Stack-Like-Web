@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useGameStore } from '@/stores/gameStore'
 import { cardTypes, getItemsByType } from '@/config/cardTypes'
 import { gameConfig } from '@/config/game'
 
+const { t } = useI18n()
 const gameStore = useGameStore()
 
 const selectedType = ref(cardTypes[0].id)
@@ -12,44 +14,56 @@ const currentItems = computed(() => getItemsByType(selectedType.value))
 
 /**
  * 查找一个空闲的位置来放置新卡牌
- * 从屏幕中心开始，如果该位置有卡牌则往旁边位移
+ * 从地图中心开始，如果该位置有卡牌则往旁边位移
+ * Find an available position to place a new card
+ * Start from map center, offset if position is occupied
+ * 
+ * 返回世界坐标（卡牌存储的是世界坐标）
+ * Returns world coordinates (cards store world coordinates)
  */
 function findAvailablePosition(): { x: number; y: number } {
-  const { cellWidth, cellHeight } = gameConfig.grid
-  const { width, height } = gameConfig.viewport
+  const { width: cardWidth, height: cardHeight } = gameConfig.card
+  const { width: mapWidth, height: mapHeight } = gameConfig.viewport
   
-  // 屏幕中心作为起始位置
-  const centerX = width / 2
-  const centerY = height / 2
+  // 地图中心（世界坐标）
+  // Map center (world coordinates)
+  const centerX = mapWidth / 2
+  const centerY = mapHeight / 2
   
   // 偏移步长（卡牌宽度 + 间距）
-  const stepX = cellWidth + 20
-  const stepY = cellHeight + 20
+  // Step size (card width + spacing)
+  const stepX = cardWidth + 20
+  const stepY = cardHeight + 20
   
   // 螺旋式搜索空闲位置
   // 方向顺序：右、下、左、上
+  // Spiral search for available position
+  // Direction order: right, down, left, up
   const directions = [
-    { dx: 1, dy: 0 },   // 右
-    { dx: 0, dy: 1 },   // 下
-    { dx: -1, dy: 0 },  // 左
-    { dx: 0, dy: -1 }   // 上
+    { dx: 1, dy: 0 },   // 右 / right
+    { dx: 0, dy: 1 },   // 下 / down
+    { dx: -1, dy: 0 },  // 左 / left
+    { dx: 0, dy: -1 }   // 上 / up
   ]
   
   // 先检查中心位置
+  // Check center position first
   if (!gameStore.findStackAtPosition(centerX, centerY)) {
     return { x: centerX, y: centerY }
   }
   
   // 螺旋式向外搜索
+  // Spiral outward search
   for (let radius = 1; radius <= 20; radius++) {
     for (const dir of directions) {
-      // 每个方向检查 radius 次
       for (let i = 0; i < radius; i++) {
         const testX = centerX + dir.dx * stepX * radius
         const testY = centerY + dir.dy * stepY * radius
         
-        // 确保位置在视口范围内
-        if (testX >= 50 && testX <= width - 50 && testY >= 50 && testY <= height - 50) {
+        // 确保位置在地图范围内
+        // Ensure position is within map boundaries
+        if (testX >= 50 && testX <= mapWidth - 50 && 
+            testY >= 50 && testY <= mapHeight - 50) {
           if (!gameStore.findStackAtPosition(testX, testY)) {
             return { x: testX, y: testY }
           }
@@ -59,6 +73,7 @@ function findAvailablePosition(): { x: number; y: number } {
   }
   
   // 如果螺旋搜索没找到，使用简单的对角线偏移
+  // If spiral search fails, use simple diagonal offset
   const existingCount = gameStore.currentMap.stacks.length
   const offsetX = (existingCount % 10) * stepX
   const offsetY = Math.floor(existingCount / 10) * stepY
@@ -69,9 +84,12 @@ function findAvailablePosition(): { x: number; y: number } {
   }
 }
 
-function addCard(item: { typeId: string; name: string; emoji: string }) {
+function addCard(item: { typeId: string; nameKey: string; emoji: string }) {
   const position = findAvailablePosition()
-  gameStore.createStack(position.x, position.y, item.typeId, item.name, item.emoji)
+  // 使用 nameKey 作为名称，同时传递 nameKey 用于翻译
+  // Use nameKey as name, also pass nameKey for translation
+  const name = t(item.nameKey)
+  gameStore.createStack(position.x, position.y, item.typeId, name, item.emoji, item.nameKey)
 }
 
 function deleteSelected() {
@@ -85,6 +103,16 @@ function clearAll() {
     }
     gameStore.clearSelection()
   }
+}
+
+// 获取类型名称（翻译）
+function getTypeName(type: { id: string; nameKey: string }): string {
+  return t(type.nameKey)
+}
+
+// 获取物品名称（翻译）
+function getItemName(item: { nameKey: string }): string {
+  return t(item.nameKey)
 }
 </script>
 
@@ -101,19 +129,19 @@ function clearAll() {
           :style="{ borderColor: type.color }"
           @click="selectedType = type.id"
         >
-          {{ type.name }}
+          {{ getTypeName(type) }}
         </button>
       </div>
 
       <div class="item-list">
         <div
           v-for="item in currentItems"
-          :key="item.name"
+          :key="item.nameKey"
           class="item-btn"
           @click="addCard(item)"
         >
           <span class="item-emoji">{{ item.emoji }}</span>
-          <span class="item-name">{{ item.name }}</span>
+          <span class="item-name">{{ getItemName(item) }}</span>
         </div>
       </div>
     </div>

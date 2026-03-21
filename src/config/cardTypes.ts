@@ -1,6 +1,6 @@
 export interface CardTypeConfig {
   id: string
-  name: string
+  nameKey: string      // i18n key for name
   color: string
   stackable: boolean       // 是否允许堆叠
   stackWith?: string[]     // 可堆叠的其他类型ID（可选）
@@ -8,41 +8,41 @@ export interface CardTypeConfig {
 
 export interface CardItemConfig {
   typeId: string
-  name: string
+  nameKey: string      // i18n key for name
   emoji: string
 }
 
 export const cardTypes: CardTypeConfig[] = [
-  { id: 'material', name: '素材', color: '#8b5cf6', stackable: true },
-  { id: 'unit', name: '单位', color: '#3b82f6', stackable: false },
-  { id: 'building', name: '建筑', color: '#f59e0b', stackable: false },
+  { id: 'material', nameKey: 'cardTypes.material', color: '#8b5cf6', stackable: true },
+  { id: 'unit', nameKey: 'cardTypes.unit', color: '#3b82f6', stackable: false },
+  { id: 'building', nameKey: 'cardTypes.building', color: '#f59e0b', stackable: false },
 ]
 
 export const cardItems: CardItemConfig[] = [
-  { typeId: 'material', name: '木材', emoji: '🪵' },
-  { typeId: 'material', name: '石材', emoji: '🪨' },
-  { typeId: 'material', name: '小麦', emoji: '🌾' },
-  { typeId: 'material', name: '苹果', emoji: '🍎' },
-  { typeId: 'material', name: '宝石', emoji: '💎' },
-  { typeId: 'material', name: '砖块', emoji: '🧱' },
-  { typeId: 'material', name: '家具', emoji: '🪑' },
-  { typeId: 'material', name: '树木', emoji: '🌲' },
-  { typeId: 'unit', name: '农民', emoji: '👨‍🌾' },
-  { typeId: 'unit', name: '剑士', emoji: '⚔️' },
-  { typeId: 'unit', name: '弓兵', emoji: '🏹' },
-  { typeId: 'unit', name: '盾牌兵', emoji: '🛡️' },
-  { typeId: 'unit', name: '战马', emoji: '🐴' },
-  { typeId: 'unit', name: '狼人', emoji: '🐺' },
-  { typeId: 'unit', name: '法师', emoji: '🧙' },
-  { typeId: 'unit', name: '公主', emoji: '👸' },
-  { typeId: 'building', name: '小屋', emoji: '🏠' },
-  { typeId: 'building', name: '城堡', emoji: '🏰' },
-  { typeId: 'building', name: '教堂', emoji: '⛪' },
-  { typeId: 'building', name: '塔楼', emoji: '🗼' },
-  { typeId: 'building', name: '神庙', emoji: '🏛️' },
-  { typeId: 'building', name: '兵营', emoji: '⚔️' },
-  { typeId: 'building', name: '谷仓', emoji: '🌾' },
-  { typeId: 'building', name: '阁楼', emoji: '🏯' },
+  { typeId: 'material', nameKey: 'cardItems.wood', emoji: '🪵' },
+  { typeId: 'material', nameKey: 'cardItems.stone', emoji: '🪨' },
+  { typeId: 'material', nameKey: 'cardItems.wheat', emoji: '🌾' },
+  { typeId: 'material', nameKey: 'cardItems.apple', emoji: '🍎' },
+  { typeId: 'material', nameKey: 'cardItems.gem', emoji: '💎' },
+  { typeId: 'material', nameKey: 'cardItems.brick', emoji: '🧱' },
+  { typeId: 'material', nameKey: 'cardItems.furniture', emoji: '🪑' },
+  { typeId: 'material', nameKey: 'cardItems.tree', emoji: '🌲' },
+  { typeId: 'unit', nameKey: 'cardItems.farmer', emoji: '👨‍🌾' },
+  { typeId: 'unit', nameKey: 'cardItems.swordsman', emoji: '⚔️' },
+  { typeId: 'unit', nameKey: 'cardItems.archer', emoji: '🏹' },
+  { typeId: 'unit', nameKey: 'cardItems.shieldBearer', emoji: '🛡️' },
+  { typeId: 'unit', nameKey: 'cardItems.warhorse', emoji: '🐴' },
+  { typeId: 'unit', nameKey: 'cardItems.werewolf', emoji: '🐺' },
+  { typeId: 'unit', nameKey: 'cardItems.mage', emoji: '🧙' },
+  { typeId: 'unit', nameKey: 'cardItems.princess', emoji: '👸' },
+  { typeId: 'building', nameKey: 'cardItems.cottage', emoji: '🏠' },
+  { typeId: 'building', nameKey: 'cardItems.castle', emoji: '🏰' },
+  { typeId: 'building', nameKey: 'cardItems.church', emoji: '⛪' },
+  { typeId: 'building', nameKey: 'cardItems.tower', emoji: '🗼' },
+  { typeId: 'building', nameKey: 'cardItems.temple', emoji: '🏛️' },
+  { typeId: 'building', nameKey: 'cardItems.barracks', emoji: '⚔️' },
+  { typeId: 'building', nameKey: 'cardItems.barn', emoji: '🌾' },
+  { typeId: 'building', nameKey: 'cardItems.attic', emoji: '🏯' },
 ]
 
 export function getCardType(id: string): CardTypeConfig | undefined {

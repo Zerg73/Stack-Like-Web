@@ -31,6 +31,12 @@ const animationStyle = computed(() => {
   }
 })
 
+// viewport-content 尺寸等于地图尺寸
+const contentStyle = computed(() => ({
+  width: `${gameConfig.viewport.width}px`,
+  height: `${gameConfig.viewport.height}px`
+}))
+
 function handleWheel(e: WheelEvent) {
   e.preventDefault()
 
@@ -109,7 +115,7 @@ onUnmounted(() => {
     @mousedown="handleMouseDown"
     @contextmenu="handleContextMenu"
   >
-    <div class="viewport-content" :style="{ ...transformStyle, ...animationStyle }">
+    <div class="viewport-content" :style="{ ...transformStyle, ...animationStyle, ...contentStyle }">
       <slot />
     </div>
   </div>
@@ -130,6 +136,9 @@ onUnmounted(() => {
 }
 
 .viewport-content {
+  position: absolute;
+  left: 0;
+  bottom: 0;
   transform-origin: left bottom;
   will-change: transform;
 }

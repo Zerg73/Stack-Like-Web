@@ -53,6 +53,14 @@ export class GameEngine {
     this.drag = new DragModule(this.coordinate, this.stack)
   }
   
+  /**
+   * 初始化视口
+   * Initialize viewport
+   */
+  initialize(): void {
+    this.coordinate.initializeViewport()
+  }
+  
   // ========== 坐标相关 API ==========
   
   /**
@@ -121,16 +129,17 @@ export class GameEngine {
   // ========== 堆叠相关 API ==========
   
   /**
-   * 创建新的卡牌堆叠
+   * 创建新堆叠
    */
   createStack(
     x: number,
     y: number,
     typeId: string,
     name: string,
-    emoji: string
+    emoji: string,
+    nameKey?: string
   ): CardStack {
-    return this.stack.createStack(x, y, typeId, name, emoji)
+    return this.stack.createStack(x, y, typeId, name, emoji, nameKey)
   }
   
   /**
@@ -201,15 +210,17 @@ export class GameEngine {
    * @param cardIndex 拖拽的卡牌索引（-1 表示整个堆叠）
    * @param screenX 屏幕 X 坐标
    * @param screenY 屏幕 Y 坐标
+   * @param isSeparating 是否是分离操作（默认 false）
    * @returns 拖拽起始的世界坐标
    */
   startDrag(
     stack: CardStack,
     cardIndex: number,
     screenX: number,
-    screenY: number
+    screenY: number,
+    isSeparating: boolean = false
   ): { x: number; y: number } | null {
-    return this.drag.startDrag(stack, cardIndex, screenX, screenY)
+    return this.drag.startDrag(stack, cardIndex, screenX, screenY, isSeparating)
   }
   
   /**
@@ -226,11 +237,11 @@ export class GameEngine {
    * 结束拖拽
    */
   endDrag(
-    stacks: CardStack[],
+    stackMap: Map<string, CardStack>,
     currentScreenX: number,
     currentScreenY: number
   ): DropResult {
-    return this.drag.endDrag(stacks, currentScreenX, currentScreenY)
+    return this.drag.endDrag(stackMap, currentScreenX, currentScreenY)
   }
   
   /**
@@ -255,20 +266,54 @@ export class GameEngine {
   }
   
   /**
+   * 是否是分离操作
+   */
+  get isSeparating(): boolean {
+    return this.drag.isSeparating
+  }
+  
+  /**
+   * 被拖拽的卡牌索引
+   */
+  get draggedCardIndex(): number {
+    return this.drag.draggedCardIndex
+  }
+  
+  /**
+   * 源堆叠 ID
+   */
+  get sourceStackId(): string | null {
+    return this.drag.sourceStackId
+  }
+  
+  /**
    * 查找放置目标
    */
   findDropTarget(
-    stacks: CardStack[],
     screenX: number,
-    screenY: number
+    screenY: number,
+    stackMap: Map<string, CardStack>
   ): { target: CardStack | null; canDrop: boolean } {
-    return this.drag.findDropTarget(stacks, screenX, screenY)
+    return this.drag.findDropTarget(screenX, screenY, stackMap)
   }
   
   // ========== 工具方法 ==========
   
   /**
+   * 限制卡牌位置在地图范围内
+   * Clamp card position within map boundaries
+   * 
+   * @param x 世界坐标 X / World coordinate X
+   * @param y 世界坐标 Y / World coordinate Y
+   * @returns 限制后的世界坐标 / Clamped world coordinates
+   */
+  clampCardPosition(x: number, y: number): { x: number; y: number } {
+    return this.coordinate.clampCardPosition(x, y)
+  }
+  
+  /**
    * 重置引擎状态
+   * Reset engine state
    */
   reset(): void {
     this.coordinate.reset()

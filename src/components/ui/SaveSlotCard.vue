@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { SaveSlot } from '@/stores/saveStore'
 
 const props = defineProps<{
   slot: SaveSlot
 }>()
+
+const { t, locale } = useI18n()
 
 const emit = defineEmits<{
   start: [slot: SaveSlot]
@@ -11,16 +15,24 @@ const emit = defineEmits<{
   delete: [slot: SaveSlot]
 }>()
 
-function formatDate(timestamp: number): string {
-  const date = new Date(timestamp)
-  return date.toLocaleDateString('zh-CN', {
+// 根据当前语言格式化日期
+const formattedDate = computed(() => {
+  const date = new Date(props.slot.updatedAt)
+  return date.toLocaleDateString(locale.value, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit'
   })
-}
+})
+
+// MOD 数量文本
+const modCountText = computed(() => {
+  const count = props.slot.modList.length
+  if (count === 0) return ''
+  return t('saveSlot.modCount', { count })
+})
 
 function handleDelete(e: Event) {
   e.stopPropagation()
@@ -38,14 +50,14 @@ function handleConfig(e: Event) {
     <div class="card-header">
       <button
         class="icon-btn config-btn"
-        title="MOD配置"
+        :title="t('saveSlot.modConfig')"
         @click="handleConfig"
       >
         ⚙️
       </button>
       <button
         class="icon-btn delete-btn"
-        title="删除存档"
+        :title="t('saveSlot.deleteSave')"
         @click="handleDelete"
       >
         ✕
@@ -54,15 +66,15 @@ function handleConfig(e: Event) {
 
     <div class="card-content" @click="emit('start', slot)">
       <h3 class="slot-name">{{ slot.name }}</h3>
-      <p class="slot-date">{{ formatDate(slot.updatedAt) }}</p>
+      <p class="slot-date">{{ formattedDate }}</p>
       <p v-if="slot.modList.length > 0" class="slot-mods">
-        {{ slot.modList.length }} 个MOD
+        {{ modCountText }}
       </p>
     </div>
 
     <div class="card-footer">
       <button class="start-btn" @click="emit('start', slot)">
-        开始游戏
+        {{ t('saveSlot.startGame') }}
       </button>
     </div>
   </div>

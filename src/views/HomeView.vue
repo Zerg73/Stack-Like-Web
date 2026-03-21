@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSaveStore, type SaveSlot } from '@/stores/saveStore'
+import { useLocaleStore } from '@/stores/localeStore'
 import SaveSlotCard from '@/components/ui/SaveSlotCard.vue'
 import NewSlotCard from '@/components/ui/NewSlotCard.vue'
 import ModConfigModal from '@/components/ui/ModConfigModal.vue'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 
+const { t } = useI18n()
 const saveStore = useSaveStore()
+const localeStore = useLocaleStore()
 
 const showModConfig = ref(false)
 const showDeleteConfirm = ref(false)
@@ -81,8 +85,8 @@ async function handleFileChange(event: Event) {
 <template>
   <div class="home-view">
     <header class="title-area">
-      <h1 class="game-title">STACK LIKE</h1>
-      <p class="game-subtitle">堆叠大陆</p>
+      <h1 class="game-title">{{ t('home.title') }}</h1>
+      <p class="game-subtitle">{{ t('home.subtitle') }}</p>
     </header>
 
     <section class="save-section">
@@ -103,11 +107,14 @@ async function handleFileChange(event: Event) {
     </section>
 
     <footer class="action-bar">
+      <button class="action-btn lang-btn" @click="localeStore.toggleLocale()">
+        🌐 {{ localeStore.localeName }}
+      </button>
       <button class="action-btn" @click="triggerImport">
-        📥 导入存档
+        📥 {{ t('home.importSave') }}
       </button>
       <button class="action-btn" @click="saveStore.exportAll">
-        📤 导出存档
+        📤 {{ t('home.exportSave') }}
       </button>
     </footer>
 
@@ -127,10 +134,10 @@ async function handleFileChange(event: Event) {
 
     <ConfirmModal
       v-if="showDeleteConfirm && pendingDeleteSlot"
-      title="删除存档"
-      :message="`确定要删除存档「${pendingDeleteSlot.name}」吗？此操作不可恢复。`"
-      confirm-text="删除"
-      cancel-text="取消"
+      :title="t('confirmModal.deleteTitle')"
+      :message="t('confirmModal.deleteMessage', { name: pendingDeleteSlot.name })"
+      :confirm-text="t('common.confirm')"
+      :cancel-text="t('common.cancel')"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
     />
@@ -218,5 +225,9 @@ async function handleFileChange(event: Event) {
   background: rgba(59, 130, 246, 0.1);
   border-color: var(--color-primary);
   color: var(--color-primary);
+}
+
+.lang-btn {
+  min-width: 120px;
 }
 </style>

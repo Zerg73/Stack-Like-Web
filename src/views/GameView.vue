@@ -16,9 +16,7 @@ import ZoomControls from '@/game/core/ZoomControls.vue'
 import HelpButton from '@/game/core/HelpButton.vue'
 import HelpModal from '@/game/core/HelpModal.vue'
 import DevToolbar from '@/game/core/DevToolbar.vue'
-import { CardClickEvent, StackDragStartEvent } from '@/game/events'
-import type { CardStack } from '@/game/types'
-import { isStackDragStartEvent } from '@/game/events'
+import { CardClickEvent, StackDragStartEvent, CardLongpressEvent } from '@/game/events'
 
 const props = defineProps<{
   slotId: string | null
@@ -35,7 +33,6 @@ useKeyboardControls()
 // 拖拽状态
 const dragStartMouse = ref({ x: 0, y: 0 })
 const dragStartStack = ref({ x: 0, y: 0 })
-const draggedCardIndex = ref(-1)
 
 // 初始化游戏
 onMounted(() => {
@@ -48,6 +45,9 @@ watch(() => props.slotId, () => {
 })
 
 function initGame() {
+  // 初始化视口位置
+  gameStore.engine.initialize()
+  
   // 清空当前地图
   gameStore.currentMap.stacks = []
   
@@ -63,7 +63,7 @@ function handleCardClick(event: CardClickEvent) {
 }
 
 // 处理卡牌长按事件
-function handleCardLongpress(event: CardClickEvent) {
+function handleCardLongpress(event: CardLongpressEvent) {
   console.log('Long press on stack:', event.stack.id, 'at', event.timestamp)
 }
 

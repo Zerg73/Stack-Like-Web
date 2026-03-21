@@ -7,44 +7,81 @@ const gameStore = useGameStore()
 
 const isDragging = ref(false)
 
-// 小地图缩放比例
+const mapHeight = gameConfig.viewport.height
+
+const windowWidth = ref(window.innerWidth)
+const windowHeight = ref(window.innerHeight)
+
+function updateWindowSize() {
+  windowWidth.value = window.innerWidth
+  windowHeight.value = window.innerHeight
+}
+
+const viewportWorldWidth = computed(() => windowWidth.value / gameStore.viewport.scale)
+const viewportWorldHeight = computed(() => windowHeight.value / gameStore.viewport.scale)
+
+const viewportBottomLeft = computed(() => {
+  const { translateX, translateY, scale } = gameStore.viewport
+  const worldX = -translateX / scale
+  const worldY = mapHeight - (windowHeight.value - translateY) / scale
+  return { x: worldX, y: worldY }
+})
+
 const minimapScale = computed(() => {
-  const { width, height } = gameConfig.minimap
-  const { viewport: viewportConfig } = gameConfig
-  return Math.min(width / viewportConfig.width, height / viewportConfig.height)
+  const { width } = gameConfig.minimap
+  return width / viewportWorldWidth.value
 })
 
 const minimapStyle = computed(() => {
+  const height = viewportWorldHeight.value * minimapScale.value
   return {
-    width: `${gameConfig.viewport.width * minimapScale.value}px`,
-    height: `${gameConfig.viewport.height * minimapScale.value}px`
+    width: `${gameConfig.minimap.width}px`,
+    height: `${height}px`
   }
 })
 
-// 视口在小地图上的位置
-const viewportRectStyle = computed(() => {
+const visibleStacks = computed(() => {
+  const { x: viewX, y: viewY } = viewportBottomLeft.value
+  const viewWidth = viewportWorldWidth.value
+  const viewHeight = viewportWorldHeight.value
+  
+  const padding = gameConfig.card.width
+  
+  return gameStore.currentMap.stacks.filter(stack => {
+    const card = stack.cards[0]
+    if (!card) return false
+    return (
+      card.x >= viewX - padding &&
+      card.x <= viewX + viewWidth + padding &&
+      card.y >= viewY - padding &&
+      card.y <= viewY + viewHeight + padding
+    )
+  })
+})
+
+function getCardStyle(stack: typeof gameStore.currentMap.stacks[0]) {
+  const firstCard = stack.cards[0]
+  if (!firstCard) return {}
+  
   const scale = minimapScale.value
-  const { translateX, translateY, scale: viewportScale } = gameStore.viewport
+  const { x: viewX, y: viewY } = viewportBottomLeft.value
   
-  // 屏幕在世界坐标中的尺寸
-  const viewWidth = window.innerWidth / viewportScale
-  const viewHeight = window.innerHeight / viewportScale
+  const relX = (firstCard.x - viewX) * scale
+  const relY = (firstCard.y - viewY) * scale
   
-  // 视口矩形在小地图上的尺寸
-  const rectWidth = viewWidth * scale
-  const rectHeight = viewHeight * scale
-  
-  // 视口矩形在小地图上的位置
-  const rectX = -translateX * scale / viewportScale
-  const rectY = -translateY * scale / viewportScale
+  const cardCount = stack.cards.length
+  const baseSize = 8
+  const sizeMultiplier = Math.min(1 + cardCount * 0.1, 2)
+  const cardSize = baseSize * sizeMultiplier
   
   return {
-    width: `${rectWidth}px`,
-    height: `${rectHeight}px`,
-    left: `${rectX}px`,
-    top: `${rectY}px`
+    left: `${relX}px`,
+    bottom: `${relY}px`,
+    width: `${cardSize}px`,
+    height: `${cardSize * 1.25}px`,
+    opacity: Math.min(0.5 + cardCount * 0.1, 1)
   }
-})
+}
 
 function handleMouseDown(e: MouseEvent) {
   e.preventDefault()
@@ -62,68 +99,82 @@ function handleMouseUp() {
   isDragging.value = false
 }
 
-function updateViewportFromMinimap(e: MouseEvent) {
-  const target = e.currentTarget as HTMLElement
-  const rect = target.getBoundingClientRect()
-  
-  // 点击位置在小地图上的坐标
-  const clickX = e.clientX - rect.left
-  const clickY = e.clientY - rect.top
-  
-  // 转换为世界坐标
-  const worldX = clickX / minimapScale.value
-  const worldY = clickY / minimapScale.value
-  
-  // 计算新的 translate，使点击位置居中
-  const { scale: viewportScale } = gameStore.viewport
-  const newTranslateX = -worldX * viewportScale + window.innerWidth / 2
-  const newTranslateY = -worldY * viewportScale + window.innerHeight / 2
-  
-  gameStore.setTranslate(newTranslateX, newTranslateY)
+function handleTouchStart(e: TouchEvent) {
+  e.preventDefault()
+  e.stopPropagation()
+  isDragging.value = true
+  updateViewportFromMinimap(e.touches[0])
 }
 
-// 获取卡牌在小地图上的位置
-function getCardStyle(stack: typeof gameStore.currentMap.stacks[0]) {
-  const firstCard = stack.cards[0]
-  const scale = minimapScale.value
+function handleTouchMove(e: TouchEvent) {
+  if (!isDragging.value) return
+  updateViewportFromMinimap(e.touches[0])
+}
+
+function handleTouchEnd() {
+  isDragging.value = false
+}
+
+function updateViewportFromMinimap(clientPos: { clientX: number; clientY: number }) {
+  const minimapEl = document.querySelector('.minimap') as HTMLElement
+  if (!minimapEl) return
   
-  // 世界坐标转小地图坐标
-  // 注意：世界坐标原点在左下角，小地图原点在左上角
-  const x = firstCard.x * scale
-  const y = (gameConfig.viewport.height - firstCard.y) * scale
+  const rect = minimapEl.getBoundingClientRect()
   
-  return {
-    left: `${x}px`,
-    top: `${y}px`
-  }
+  const clickX = clientPos.clientX - rect.left
+  const clickY = clientPos.clientY - rect.top
+  
+  const minimapHeight = rect.height
+  
+  const relX = clickX
+  const relY = minimapHeight - clickY
+  
+  const worldX = viewportBottomLeft.value.x + relX / minimapScale.value
+  const worldY = viewportBottomLeft.value.y + relY / minimapScale.value
+  
+  const { scale: viewportScale } = gameStore.viewport
+  const newTranslateX = -worldX * viewportScale + windowWidth.value / 2
+  const newTranslateY = (worldY - mapHeight) * viewportScale + windowHeight.value / 2
+  
+  gameStore.engine.coordinate.setTranslate(newTranslateX, newTranslateY)
+  gameStore.engine.coordinate.clampTranslate()
 }
 
 onMounted(() => {
   window.addEventListener('mouseup', handleMouseUp)
+  window.addEventListener('resize', updateWindowSize)
 })
 
 onUnmounted(() => {
   window.removeEventListener('mouseup', handleMouseUp)
+  window.removeEventListener('resize', updateWindowSize)
 })
 </script>
 
 <template>
   <div
     class="minimap-container"
+    :class="{ dragging: isDragging }"
     @mousedown="handleMouseDown"
     @mousemove="handleMouseMove"
     @mouseup="handleMouseUp"
     @mouseleave="handleMouseUp"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
   >
     <div class="minimap" :style="minimapStyle">
       <div
-        v-for="stack in gameStore.currentMap.stacks"
+        v-for="stack in visibleStacks"
         :key="stack.id"
         class="minimap-card"
         :class="{ selected: gameStore.isStackSelected(stack.id) }"
         :style="getCardStyle(stack)"
-      />
-      <div class="minimap-viewport" :style="viewportRectStyle" />
+      >
+        <span v-if="stack.cards.length > 1" class="stack-count">
+          {{ stack.cards.length }}
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -139,6 +190,11 @@ onUnmounted(() => {
   padding: 8px;
   cursor: pointer;
   z-index: 100;
+  transition: box-shadow 0.2s ease;
+}
+
+.minimap-container.dragging {
+  box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .minimap {
@@ -150,21 +206,24 @@ onUnmounted(() => {
 
 .minimap-card {
   position: absolute;
-  width: 8px;
-  height: 10px;
+  min-width: 8px;
+  min-height: 10px;
   background: var(--color-border);
   border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.1s, height 0.1s, opacity 0.1s;
 }
 
 .minimap-card.selected {
   background: var(--color-primary);
 }
 
-.minimap-viewport {
-  position: absolute;
-  border: 2px solid var(--color-primary);
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 2px;
-  pointer-events: none;
+.stack-count {
+  font-size: 8px;
+  font-weight: bold;
+  color: var(--color-background);
+  line-height: 1;
 }
 </style>

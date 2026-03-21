@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getCardColor } from '@/config/cardTypes'
 import type { GameCard } from '@/game/types'
 
@@ -12,6 +13,8 @@ const props = defineProps<{
   canDrop?: boolean       // 是否可以放置
 }>()
 
+const { t } = useI18n()
+
 // Card 组件只触发原始鼠标事件，由 CardStack 创建事件对象
 const emit = defineEmits<{
   click: [event: MouseEvent]
@@ -20,9 +23,18 @@ const emit = defineEmits<{
 
 const typeColor = computed(() => getCardColor(props.card.typeId))
 
+// 卡牌名称（优先使用 nameKey 翻译，否则使用原始名称）
+const cardName = computed(() => {
+  if (props.card.nameKey) {
+    return t(props.card.nameKey)
+  }
+  return props.card.name
+})
+
 const cardStyle = computed(() => ({
   width: '80px',
-  // 最顶层的卡牌完整渲染(107px)，其他卡牌仅渲染名称栏(32px)
+  // 顶层卡牌完整渲染(107px)，非顶层卡牌仅渲染名字栏(32px)
+  // Top card shows full height (107px), non-top cards show only name strip (32px)
   height: props.isTop ? '107px' : '32px',
   background: props.isTop ? 'var(--color-surface)' : typeColor.value,
   borderColor: props.isDropTarget 
@@ -63,10 +75,11 @@ function handleContentMouseDown(e: MouseEvent) {
       @mousedown="handleNameStripMouseDown"
     >
       <span class="type-dot"></span>
-      <span class="name">{{ card.name }}</span>
+      <span class="name">{{ cardName }}</span>
     </div>
 
     <!-- 内容区域（只有最顶层卡牌显示） -->
+    <!-- Content area (only shown for top card) -->
     <div v-if="isTop" class="content" @mousedown="handleContentMouseDown">
       <span class="emoji">{{ card.emoji }}</span>
     </div>
@@ -76,7 +89,7 @@ function handleContentMouseDown(e: MouseEvent) {
 <style scoped>
 .card {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   border: 2px solid var(--color-border);
   border-radius: 8px;
