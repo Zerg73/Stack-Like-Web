@@ -86,10 +86,12 @@ function findAvailablePosition(): { x: number; y: number } {
 
 function addCard(item: { typeId: string; nameKey: string; emoji: string }) {
   const position = findAvailablePosition()
-  // 使用 nameKey 作为名称，同时传递 nameKey 用于翻译
-  // Use nameKey as name, also pass nameKey for translation
-  const name = t(item.nameKey)
-  gameStore.createStack(position.x, position.y, item.typeId, name, item.emoji, item.nameKey)
+  // 提取 itemId（nameKey 的最后一部分）
+  // Extract itemId (last part of nameKey)
+  const itemId = item.nameKey.split('.').pop() || ''
+  // 使用 createStackByItemId 来支持建筑配置
+  // Use createStackByItemId to support building config
+  gameStore.createStackByItemId(itemId, position.x, position.y)
 }
 
 function deleteSelected() {

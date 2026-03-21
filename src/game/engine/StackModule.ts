@@ -70,7 +70,8 @@ export class StackModule {
       x,
       y,
       data: {},
-      stackId
+      stackId,
+      isAdjusting: false  // 初始化为 false，确保 Vue 可以追踪此属性 / Initialize as false, ensure Vue can track this property
     }
     
     return {

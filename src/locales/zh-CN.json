@@ -65,6 +65,7 @@
     "brick": "砖块",
     "furniture": "家具",
     "tree": "树木",
+    "ore": "矿石",
     "farmer": "农民",
     "swordsman": "剑士",
     "archer": "弓兵",
@@ -80,11 +81,29 @@
     "temple": "神庙",
     "barracks": "兵营",
     "barn": "谷仓",
-    "attic": "阁楼"
+    "attic": "阁楼",
+    "mine": "矿井"
   },
   "locale": {
     "switchLanguage": "切换语言",
     "zhCN": "简体中文",
     "enUS": "English"
+  },
+  "seasons": {
+    "spring": "春",
+    "summer": "夏",
+    "autumn": "秋",
+    "winter": "冬"
+  },
+  "time": {
+    "pause": "暂停",
+    "resume": "继续",
+    "speedNormal": "标准",
+    "speedFast": "快速",
+    "speedTurbo": "极速",
+    "year": "第{year}年",
+    "month": "{month}月",
+    "day": "{day}日",
+    "date": "第{year}年{month}月{day}日"
   }
 }

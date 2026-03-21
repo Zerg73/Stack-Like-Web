@@ -8,19 +8,26 @@
 import { CoordinateModule } from './CoordinateModule'
 import { StackModule, STACK_OFFSET } from './StackModule'
 import { DragModule } from './DragModule'
+import { TimeModule } from './TimeModule'
+import { CollisionModule } from './CollisionModule'
 import type { CardStack, GameCard, DropResult } from '@/game/types'
+import { gameConfig } from '@/config/game'
 
 /**
  * 游戏引擎
  * 
  * 职责：
- * 1. 统一管理坐标系统、堆叠、拖拽等模块
+ * 1. 统一管理坐标系统、堆叠、拖拽、时间等模块
  * 2. 提供简洁的 API 给业务层
  * 3. 隐藏底层实现细节
+ * 4. 管理 FixedUpdate 游戏循环
  * 
  * 使用示例：
  * ```typescript
  * const engine = new GameEngine()
+ * 
+ * // 启动游戏循环
+ * engine.start()
  * 
  * // 创建堆叠
  * const stack = engine.createStack(100, 200, 'wood', '木材', '🪵')
@@ -34,6 +41,9 @@ import type { CardStack, GameCard, DropResult } from '@/game/types'
  * 
  * // 结束拖拽
  * const result = engine.endDrag(allStacks, currentScreenX, currentScreenY)
+ * 
+ * // 停止游戏循环
+ * engine.stop()
  * ```
  */
 export class GameEngine {
@@ -46,11 +56,129 @@ export class GameEngine {
   /** 拖拽模块 */
   readonly drag: DragModule
   
+  /** 时间模块 */
+  readonly time: TimeModule
+  
+  /** 碰撞检测模块 */
+  readonly collision: CollisionModule
+  
+  // ========== FixedUpdate 相关 / FixedUpdate related ==========
+  
+  /** 固定 tick 间隔（毫秒）/ Fixed tick interval (ms) */
+  private readonly fixedTickInterval: number = gameConfig.time.fixedTickInterval
+  
+  /** 累积时间（毫秒）/ Accumulated time (ms) */
+  private accumulatedTime: number = 0
+  
+  /** 上一帧时间 / Last frame time */
+  private lastFrameTime: number = 0
+  
+  /** 动画帧 ID / Animation frame ID */
+  private animationFrameId: number | null = null
+  
+  /** 游戏时间累积（游戏毫秒）/ Game time accumulation (game ms) */
+  private gameMsAccumulated: number = 0
+  
+  /** 是否已启动 / Is started */
+  private _isRunning: boolean = false
+  
   constructor() {
     // 初始化各模块
     this.coordinate = new CoordinateModule()
     this.stack = new StackModule()
     this.drag = new DragModule(this.coordinate, this.stack)
+    this.time = new TimeModule()
+    this.collision = new CollisionModule()
+  }
+  
+  /**
+   * 是否正在运行
+   * Is engine running
+   */
+  get isRunning(): boolean {
+    return this._isRunning
+  }
+  
+  /**
+   * 启动游戏循环
+   * Start game loop
+   */
+  start(): void {
+    if (this._isRunning) return
+    
+    this._isRunning = true
+    this.lastFrameTime = performance.now()
+    this.tick()
+  }
+  
+  /**
+   * 停止游戏循环
+   * Stop game loop
+   */
+  stop(): void {
+    this._isRunning = false
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId)
+      this.animationFrameId = null
+    }
+  }
+  
+  /**
+   * 主循环（使用 requestAnimationFrame）
+   * Main loop (using requestAnimationFrame)
+   */
+  private tick(): void {
+    if (!this._isRunning) return
+    
+    const now = performance.now()
+    const deltaTime = now - this.lastFrameTime
+    this.lastFrameTime = now
+    
+    // 累积时间
+    // Accumulate time
+    this.accumulatedTime += deltaTime
+    
+    // FixedUpdate：每 fixedTickInterval 毫秒执行一次
+    // FixedUpdate: execute every fixedTickInterval ms
+    while (this.accumulatedTime >= this.fixedTickInterval) {
+      this.accumulatedTime -= this.fixedTickInterval
+      this.fixedUpdate()
+    }
+    
+    // 继续下一帧
+    // Continue to next frame
+    this.animationFrameId = requestAnimationFrame(() => this.tick())
+  }
+  
+  /**
+   * 固定时间更新（处理游戏逻辑）
+   * Fixed time update (handle game logic)
+   * 
+   * 每 fixedTickInterval 毫秒调用一次，与帧率无关
+   * Called every fixedTickInterval ms, independent of frame rate
+   */
+  private fixedUpdate(): void {
+    if (this.time.isPaused) return
+    
+    // 计算本次 tick 的游戏时间增量
+    // Calculate game time delta for this tick
+    // 标准速度：10秒现实 = 1游戏分钟 = 60游戏秒
+    // Normal speed: 10s real = 1 game minute = 60 game seconds
+    // 所以 20ms 现实 = 20/10000 * 60 * 1000 = 120 游戏毫秒
+    // So 20ms real = 20/10000 * 60 * 1000 = 120 game ms
+    const gameMsPerTick = (this.fixedTickInterval * 60 * 1000) / (this.time.secondsPerGameMinute * 1000)
+    this.gameMsAccumulated += gameMsPerTick
+    
+    // 当累积超过 1000 游戏毫秒（1 游戏秒）时，更新时间
+    // When accumulated exceeds 1000 game ms (1 game second), update time
+    if (this.gameMsAccumulated >= 1000) {
+      const gameSecondsDelta = Math.floor(this.gameMsAccumulated / 1000)
+      this.gameMsAccumulated %= 1000
+      
+      // 更新时间模块
+      // Update time module
+      this.time.update(gameSecondsDelta)
+    }
   }
   
   /**
@@ -318,6 +446,9 @@ export class GameEngine {
   reset(): void {
     this.coordinate.reset()
     this.drag.cancelDrag()
+    this.time.reset()
+    this.gameMsAccumulated = 0
+    this.accumulatedTime = 0
   }
 }
 
@@ -328,3 +459,6 @@ export { STACK_OFFSET }
 export { CoordinateModule } from './CoordinateModule'
 export { StackModule } from './StackModule'
 export { DragModule } from './DragModule'
+export { TimeModule } from './TimeModule'
+export { CollisionModule } from './CollisionModule'
+export { ProductionModule } from './ProductionModule'

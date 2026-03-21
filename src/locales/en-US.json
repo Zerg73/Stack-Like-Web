@@ -65,6 +65,7 @@
     "brick": "Brick",
     "furniture": "Furniture",
     "tree": "Tree",
+    "ore": "Ore",
     "farmer": "Farmer",
     "swordsman": "Swordsman",
     "archer": "Archer",
@@ -80,11 +81,29 @@
     "temple": "Temple",
     "barracks": "Barracks",
     "barn": "Barn",
-    "attic": "Attic"
+    "attic": "Attic",
+    "mine": "Mine"
   },
   "locale": {
     "switchLanguage": "Switch Language",
     "zhCN": "简体中文",
     "enUS": "English"
+  },
+  "seasons": {
+    "spring": "Spring",
+    "summer": "Summer",
+    "autumn": "Autumn",
+    "winter": "Winter"
+  },
+  "time": {
+    "pause": "Pause",
+    "resume": "Resume",
+    "speedNormal": "Normal",
+    "speedFast": "Fast",
+    "speedTurbo": "Turbo",
+    "year": "Year {year}",
+    "month": "Month {month}",
+    "day": "Day {day}",
+    "date": "Year {year} Month {month} Day {day}"
   }
 }

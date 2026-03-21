@@ -54,6 +54,16 @@ const stackStyle = computed(() => {
   }
 })
 
+// 是否正在调整位置（用于动画）
+// Is adjusting position (for animation)
+// 拖拽时禁用动画，避免干扰
+// Disable animation during drag to avoid interference
+const isAdjusting = computed(() => {
+  if (props.stack.cards.length === 0) return false
+  if (props.isDragging) return false  // 拖拽时不启用动画
+  return props.stack.cards[0].isAdjusting
+})
+
 /**
  * 计算每张卡牌的偏移样式
  * Calculate offset style for each card
@@ -112,7 +122,8 @@ function handleCardDragStart(e: MouseEvent, cardIndex: number) {
       selected, 
       dragging: isDragging,
       'drop-target': isDropTarget,
-      'can-drop': canDrop
+      'can-drop': canDrop,
+      'adjusting': isAdjusting
     }"
     :style="stackStyle"
     :data-stack-id="stack.id"
@@ -131,6 +142,7 @@ function handleCardDragStart(e: MouseEvent, cardIndex: number) {
         :card-index="index"
         :is-drop-target="isDropTarget"
         :can-drop="canDrop"
+        :stack-id="stack.id"
         @click.stop="(e: MouseEvent) => handleStackClick(e)"
         @drag-start="(e) => handleCardDragStart(e, index)"
       />
@@ -142,6 +154,12 @@ function handleCardDragStart(e: MouseEvent, cardIndex: number) {
 .card-stack {
   position: absolute;
   cursor: move;
+}
+
+/* 互斥调整动画 / Collision adjustment animation */
+.card-stack.adjusting {
+  transition: left 0.3s ease-out, bottom 0.3s ease-out;
+  z-index: 100 !important;
 }
 
 .card-stack:hover {

@@ -16,9 +16,9 @@ const gameStore = useGameStore()
 
 <style scoped>
 .help-btn {
-  position: absolute;
-  top: 16px;
-  left: 16px;
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
   width: 40px;
   height: 40px;
   border: 1px solid var(--color-border);

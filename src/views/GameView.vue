@@ -6,7 +6,7 @@
  * 不包含业务逻辑，业务逻辑由 GameEngine 处理
  */
 
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import Viewport from '@/game/core/Viewport.vue'
@@ -16,6 +16,7 @@ import ZoomControls from '@/game/core/ZoomControls.vue'
 import HelpButton from '@/game/core/HelpButton.vue'
 import HelpModal from '@/game/core/HelpModal.vue'
 import DevToolbar from '@/game/core/DevToolbar.vue'
+import TimePanel from '@/game/core/TimePanel.vue'
 import { CardClickEvent, StackDragStartEvent, CardLongpressEvent } from '@/game/events'
 
 const props = defineProps<{
@@ -39,12 +40,20 @@ onMounted(() => {
   initGame()
 })
 
+// 清理
+onUnmounted(() => {
+  gameStore.stopEngine()
+})
+
 // 监听 slotId 变化
 watch(() => props.slotId, () => {
   initGame()
 })
 
 function initGame() {
+  // 停止之前的引擎
+  gameStore.stopEngine()
+  
   // 初始化视口位置
   gameStore.engine.initialize()
   
@@ -55,6 +64,9 @@ function initGame() {
     // TODO: 从存档加载游戏数据
     console.log('Loading save:', props.slotId)
   }
+  
+  // 启动游戏引擎
+  gameStore.startEngine()
 }
 
 // 处理卡牌点击事件
@@ -130,6 +142,9 @@ function handleStackDragEnd(e: MouseEvent) {
       />
     </Viewport>
 
+    <!-- 时间面板 / Time Panel -->
+    <TimePanel />
+    
     <MiniMap />
     <ZoomControls />
     <HelpButton />

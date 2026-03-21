@@ -41,6 +41,30 @@ export const gameConfig = {
     panRight: 'ArrowRight',
     rotateView: 'r',
     togglePause: ' '
+  },
+
+  time: {
+    /** 固定 tick 间隔（毫秒）/ Fixed tick interval (ms) */
+    fixedTickInterval: 20,
+    
+    /** 游戏日开始时间（小时）/ Game day start hour */
+    gameDayStartHour: 4,
+    
+    /** 每月天数 / Days per month */
+    daysPerMonth: 30,
+    
+    /** 每年月数 / Months per year */
+    monthsPerYear: 12,
+    
+    /** 年计数器重置周期（年）/ Year counter reset cycle (years) */
+    yearResetCycle: 100,
+    
+    /** 速度配置 / Speed configuration */
+    speeds: {
+      normal: { secondsPerGameMinute: 10, label: '标准', labelEn: 'Normal' },
+      fast1: { secondsPerGameMinute: 5, label: '快速', labelEn: 'Fast' },
+      fast2: { secondsPerGameMinute: 1, label: '极速', labelEn: 'Turbo' }
+    }
   }
 } as const
 
