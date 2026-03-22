@@ -8,12 +8,13 @@ export interface CardTypeConfig {
 
 /** 建筑配置 / Building configuration */
 export interface BuildingConfig {
-  type: 'mine' | 'farm' | 'sawmill'  // 建筑类型 / Building type
+  type: 'mine' | 'farm' | 'sawmill' | 'panel'  // 建筑类型 / Building type
   slots: number                  // 可容纳单位数量 / Unit slots
-  productionInterval: number     // 生产间隔（游戏分钟）/ Production interval (game minutes)
-  outputTypeId: string           // 产出卡牌类型ID / Output card type ID
-  outputNameKey: string          // 产出卡牌名称 key / Output card name key
-  outputEmoji: string            // 产出卡牌 emoji / Output card emoji
+  productionInterval?: number    // 生产间隔（游戏分钟）/ Production interval (game minutes)
+  outputTypeId?: string          // 产出卡牌类型ID / Output card type ID
+  outputNameKey?: string         // 产出卡牌名称 key / Output card name key
+  outputEmoji?: string           // 产出卡牌 emoji / Output card emoji
+  panelId?: string               // 关联的面板 ID / Associated panel ID
 }
 
 export interface CardItemConfig {
@@ -67,6 +68,40 @@ export const cardItems: CardItemConfig[] = [
       outputTypeId: 'material',
       outputNameKey: 'cardItems.ore',
       outputEmoji: '🪨'
+    }
+  },
+  // ========== 面板建筑 / Panel Buildings ==========
+  // 研究台 / Research Desk
+  {
+    typeId: 'building',
+    nameKey: 'cardItems.researchDesk',
+    emoji: '📚',
+    buildingConfig: {
+      type: 'panel',
+      slots: 0,
+      panelId: 'research'
+    }
+  },
+  // 工坊 / Workshop
+  {
+    typeId: 'building',
+    nameKey: 'cardItems.workshop',
+    emoji: '🔨',
+    buildingConfig: {
+      type: 'panel',
+      slots: 0,
+      panelId: 'crafting'
+    }
+  },
+  // 祭坛 / Altar
+  {
+    typeId: 'building',
+    nameKey: 'cardItems.altar',
+    emoji: '🔮',
+    buildingConfig: {
+      type: 'panel',
+      slots: 0,
+      panelId: 'ritual'
     }
   },
 ]

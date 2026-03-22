@@ -37,7 +37,7 @@ const gameStore = useGameStore()
 .zoom-controls {
   position: absolute;
   bottom: 16px;
-  right: 16px;
+  right: 72px;
   display: flex;
   align-items: center;
   gap: 8px;

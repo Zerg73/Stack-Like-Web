@@ -13,8 +13,13 @@ import { gameConfig } from '@/config/game'
 import { GameEngine, STACK_OFFSET } from '@/game/engine'
 import { ProductionModule, type ProductionCallbackParams, type ITimeModule, type ICollisionModule } from '@/game/engine/ProductionModule'
 import { SpeedMode, Season, SeasonNames, type GameDate } from '@/game/engine/TimeModule'
+import { SlotModule } from '@/game/engine/SlotModule'
+import { PanelModule } from '@/game/engine/PanelModule'
 import type { GameCard, CardStack, SelectionState, GameMap, DragState } from '@/game/types'
+import type { PanelInstance } from '@/game/types/panel'
 import { cardItems, type CardItemConfig, type BuildingConfig } from '@/config/cardTypes'
+import { panelDefinitions } from '@/config/panels'
+import { recipeDefinitions } from '@/config/recipes'
 
 export const useGameStore = defineStore('game', () => {
   // ========== 游戏引擎 ==========
@@ -22,6 +27,14 @@ export const useGameStore = defineStore('game', () => {
   
   // ========== 生产模块 ==========
   let productionModule: ProductionModule | null = null
+  
+  // ========== 面板模块 ==========
+  let slotModule: SlotModule | null = null
+  let panelModule: PanelModule | null = null
+  
+  // ========== 打开的面板 ==========
+  const openPanels = ref<PanelInstance[]>([])
+  const activePanelId = ref<string | null>(null)
   
   /**
    * 初始化生产模块
@@ -36,6 +49,47 @@ export const useGameStore = defineStore('game', () => {
       () => currentMap.value.stacks,
       handleProductionComplete
     )
+  }
+  
+  /**
+   * 初始化面板模块
+   * Initialize panel module
+   */
+  function initPanelModule() {
+    if (panelModule) return
+    
+    slotModule = new SlotModule()
+    panelModule = new PanelModule(slotModule)
+    
+    // 注册面板和配方定义
+    // Register panel and recipe definitions
+    panelModule.registerPanelDefinitions(panelDefinitions)
+    panelModule.registerRecipeDefinitions(recipeDefinitions)
+    
+    // 设置卡牌工厂
+    // Set card factory
+    panelModule.setCardFactory((output) => {
+      const id = `card_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+      return {
+        id,
+        typeId: output.typeId,
+        name: output.nameKey,
+        nameKey: output.nameKey,
+        emoji: output.emoji,
+        x: 0,
+        y: 0,
+        data: {},
+        stackId: '',
+        isAdjusting: false,
+        aspects: output.aspects
+      } as GameCard
+    })
+    
+    // 设置卡牌消耗回调
+    // Set card consume callback
+    panelModule.setCardConsumeCallback((cardId) => {
+      console.log('Card consumed:', cardId)
+    })
   }
   
   /**
@@ -384,34 +438,6 @@ export const useGameStore = defineStore('game', () => {
   // ========== 卡牌管理 ==========
   
   /**
-   * 带动画的位置调整
-   * Move stack with animation
-   */
-  function moveStackWithAnimation(stack: CardStack, x: number, y: number): void {
-    if (stack.cards.length === 0) return
-    
-    const card = stack.cards[0]
-    
-    // 如果位置没有变化，不需要动画
-    // If position didn't change, no animation needed
-    if (card.x === x && card.y === y) return
-    
-    // 设置调整标记，启用动画
-    // Set adjusting flag to enable animation
-    card.isAdjusting = true
-    
-    // 更新位置
-    // Update position
-    engine.moveStack(stack, x, y)
-    
-    // 动画结束后移除标记
-    // Remove flag after animation ends
-    setTimeout(() => {
-      card.isAdjusting = false
-    }, 300) // 与 CSS transition 时间一致 / Same as CSS transition duration
-  }
-  
-  /**
    * 创建堆叠
    * Create stack
    */
@@ -495,12 +521,14 @@ export const useGameStore = defineStore('game', () => {
     // Add building data to building card
     if (stack.cards.length > 0) {
       const buildingCard = stack.cards[0]
+      const buildingConfig = itemConfig.buildingConfig
       buildingCard.buildingData = {
-        type: itemConfig.buildingConfig.type,
-        productionInterval: itemConfig.buildingConfig.productionInterval,
-        outputTypeId: itemConfig.buildingConfig.outputTypeId,
-        outputNameKey: itemConfig.buildingConfig.outputNameKey,
-        outputEmoji: itemConfig.buildingConfig.outputEmoji
+        type: buildingConfig.type,
+        productionInterval: buildingConfig.productionInterval,
+        outputTypeId: buildingConfig.outputTypeId,
+        outputNameKey: buildingConfig.outputNameKey,
+        outputEmoji: buildingConfig.outputEmoji,
+        panelId: buildingConfig.panelId
       }
     }
     
@@ -723,6 +751,7 @@ export const useGameStore = defineStore('game', () => {
   function startEngine(): void {
     engine.start()
     initProductionModule()
+    initPanelModule()
   }
   
   /**
@@ -749,6 +778,143 @@ export const useGameStore = defineStore('game', () => {
 
   function calculateDragPosition(screenX: number, screenY: number) {
     return engine.calculateDragPosition(screenX, screenY)
+  }
+  
+  // ========== 面板操作 / Panel Operations ==========
+  
+  /**
+   * 打开面板
+   * Open panel
+   * 
+   * @param panelId 面板定义 ID / Panel definition ID
+   * @param position 初始位置（可选）/ Initial position (optional)
+   */
+  function openPanel(panelId: string, position?: { x: number; y: number }): string | null {
+    if (!panelModule) return null
+    
+    const instanceId = panelModule.openPanel(panelId, position)
+    if (instanceId) {
+      updateOpenPanels()
+    }
+    return instanceId
+  }
+  
+  /**
+   * 关闭面板
+   * Close panel
+   */
+  function closePanel(panelInstanceId: string): void {
+    if (!panelModule) return
+    
+    const cards = panelModule.closePanel(panelInstanceId)
+    
+    // 将卡牌返回地图
+    // Return cards to map
+    for (const card of cards) {
+      createStackFromCard(card)
+    }
+    
+    updateOpenPanels()
+  }
+  
+  /**
+   * 关闭所有面板
+   * Close all panels
+   */
+  function closeAllPanels(): void {
+    if (!panelModule) return
+    
+    const allCards = panelModule.closeAllPanels()
+    
+    for (const card of allCards) {
+      createStackFromCard(card)
+    }
+    
+    updateOpenPanels()
+  }
+  
+  /**
+   * 聚焦面板
+   * Focus panel
+   */
+  function focusPanel(panelInstanceId: string): void {
+    if (!panelModule) return
+    panelModule.focusPanel(panelInstanceId)
+    activePanelId.value = panelInstanceId
+  }
+  
+  /**
+   * 获取面板定义
+   * Get panel definition
+   */
+  function getPanelDefinition(definitionId: string) {
+    if (!panelModule) return undefined
+    return panelModule.getPanelDefinition(definitionId)
+  }
+  
+  /**
+   * 添加卡牌到槽位
+   * Add card to slot
+   */
+  function addCardToPanelSlot(panelInstanceId: string, slotId: string, card: GameCard): boolean {
+    if (!panelModule) return false
+    return panelModule.addCardToSlot(panelInstanceId, slotId, card)
+  }
+  
+  /**
+   * 从槽位移除卡牌
+   * Remove card from slot
+   */
+  function removeCardFromPanelSlot(panelInstanceId: string, slotId: string, cardId: string): GameCard | null {
+    if (!panelModule) return null
+    return panelModule.removeCardFromSlot(panelInstanceId, slotId, cardId)
+  }
+  
+  /**
+   * 检查建筑是否可以打开面板
+   * Check if building can open panel
+   */
+  function canOpenPanel(stack: CardStack): boolean {
+    if (stack.cards.length === 0) return false
+    const card = stack.cards[0]
+    if (!card.buildingData) return false
+    return card.buildingData.type === 'panel' && !!card.buildingData.panelId
+  }
+  
+  /**
+   * 获取建筑关联的面板 ID
+   * Get panel ID associated with building
+   */
+  function getBuildingPanelId(stack: CardStack): string | null {
+    if (stack.cards.length === 0) return null
+    const card = stack.cards[0]
+    return card.buildingData?.panelId ?? null
+  }
+  
+  /**
+   * 更新打开的面板列表
+   * Update open panels list
+   */
+  function updateOpenPanels(): void {
+    if (!panelModule) {
+      openPanels.value = []
+      return
+    }
+    openPanels.value = Array.from(panelModule.panels.values())
+    activePanelId.value = panelModule.activePanelId
+  }
+  
+  /**
+   * 从卡牌创建堆叠
+   * Create stack from card
+   */
+  function createStackFromCard(card: GameCard): CardStack {
+    const stack: CardStack = {
+      id: `stack_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      cards: [card]
+    }
+    currentMap.value.stacks.push(stack)
+    return stack
   }
 
   // ========== 导出 ==========
@@ -788,6 +954,11 @@ export const useGameStore = defineStore('game', () => {
     canDropOnTarget,
     selectedCards,
     stackMap,
+    
+    // 面板状态
+    // Panel state
+    openPanels,
+    activePanelId,
     
     // 缩放
     setScale,
@@ -854,6 +1025,18 @@ export const useGameStore = defineStore('game', () => {
     onTimeSeasonChange,
     startEngine,
     stopEngine,
+    
+    // 面板操作
+    // Panel operations
+    openPanel,
+    closePanel,
+    closeAllPanels,
+    focusPanel,
+    getPanelDefinition,
+    addCardToPanelSlot,
+    removeCardFromPanelSlot,
+    canOpenPanel,
+    getBuildingPanelId,
     
     // 坐标转换
     screenToWorld,

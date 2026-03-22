@@ -9,15 +9,13 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
-import Viewport from '@/game/core/Viewport.vue'
-import CardGrid from '@/game/card/CardGrid.vue'
+import PixiGameRenderer from '@/game/renderer/PixiGameRenderer.vue'
 import MiniMap from '@/game/core/MiniMap.vue'
 import ZoomControls from '@/game/core/ZoomControls.vue'
 import HelpButton from '@/game/core/HelpButton.vue'
 import HelpModal from '@/game/core/HelpModal.vue'
 import DevToolbar from '@/game/core/DevToolbar.vue'
 import TimePanel from '@/game/core/TimePanel.vue'
-import { CardClickEvent, StackDragStartEvent, CardLongpressEvent } from '@/game/events'
 
 const props = defineProps<{
   slotId: string | null
@@ -28,12 +26,9 @@ const emit = defineEmits<{
 }>()
 
 const gameStore = useGameStore()
+const rendererRef = ref<InstanceType<typeof PixiGameRenderer> | null>(null)
 
 useKeyboardControls()
-
-// 拖拽状态
-const dragStartMouse = ref({ x: 0, y: 0 })
-const dragStartStack = ref({ x: 0, y: 0 })
 
 // 初始化游戏
 onMounted(() => {
@@ -69,84 +64,91 @@ function initGame() {
   gameStore.startEngine()
 }
 
-// 处理卡牌点击事件
-function handleCardClick(event: CardClickEvent) {
-  gameStore.selectStack(event.stack.id)
+// 处理堆叠拖拽开始
+function handleStackDragStart(stackId: string, _cardIndex: number, worldX: number, worldY: number) {
+  const stack = gameStore.currentMap.stacks.find(s => s.id === stackId)
+  if (!stack) return
+  
+  const renderer = rendererRef.value
+  if (!renderer) return
+  
+  const viewportState = renderer.getViewportState()
+  if (!viewportState) return
+  
+  const screenX = worldX * viewportState.scale + viewportState.translateX
+  const screenY = worldY * viewportState.scale + viewportState.translateY
+  
+  gameStore.startStackDrag(stackId, 0, screenX, screenY)
 }
 
-// 处理卡牌长按事件
-function handleCardLongpress(event: CardLongpressEvent) {
-  console.log('Long press on stack:', event.stack.id, 'at', event.timestamp)
-}
-
-// 处理堆叠拖拽开始事件
-function handleStackDragStart(event: StackDragStartEvent) {
-  const { stack, cardIndex, mouseEvent } = event
+// 处理堆叠拖拽移动
+function handleStackDragMove(stackId: string, _cardIndex: number, worldX: number, worldY: number) {
+  const renderer = rendererRef.value
+  if (!renderer) return
   
-  // 记录拖拽开始时的鼠标位置
-  dragStartMouse.value = { x: mouseEvent.clientX, y: mouseEvent.clientY }
+  const viewportState = renderer.getViewportState()
+  if (!viewportState) return
   
-  // 开始拖拽（传递屏幕坐标）
-  const dragPosition = gameStore.startStackDrag(
-    stack.id,
-    cardIndex,
-    mouseEvent.clientX,
-    mouseEvent.clientY
-  )
-  
-  if (dragPosition) {
-    dragStartStack.value = dragPosition
-  }
-  
-  window.addEventListener('mousemove', handleStackDragMove)
-  window.addEventListener('mouseup', handleStackDragEnd)
-}
-
-// 处理拖拽移动
-function handleStackDragMove(e: MouseEvent) {
-  if (!gameStore.draggingStackId) return
+  const screenX = worldX * viewportState.scale + viewportState.translateX
+  const screenY = worldY * viewportState.scale + viewportState.translateY
   
   // 使用引擎计算拖拽位置
-  const newPos = gameStore.calculateDragPosition(e.clientX, e.clientY)
+  const newPos = gameStore.calculateDragPosition(screenX, screenY)
   
   // 移动堆叠
-  gameStore.moveStack(gameStore.draggingStackId, newPos.x, newPos.y)
+  gameStore.moveStack(stackId, newPos.x, newPos.y)
   
   // 更新拖拽目标（用于视觉反馈）
-  gameStore.updateDropTarget(e.clientX, e.clientY)
+  gameStore.updateDropTarget(screenX, screenY)
 }
 
-// 处理拖拽结束
-function handleStackDragEnd(e: MouseEvent) {
-  if (gameStore.draggingStackId) {
-    // 处理放置
-    gameStore.handleCardDrop(e.clientX, e.clientY)
-  }
+// 处理堆叠拖拽结束
+function handleStackDragEnd(_stackId: string, _cardIndex: number, worldX: number, worldY: number) {
+  const renderer = rendererRef.value
+  if (!renderer) return
   
+  const viewportState = renderer.getViewportState()
+  if (!viewportState) return
+  
+  const screenX = worldX * viewportState.scale + viewportState.translateX
+  const screenY = worldY * viewportState.scale + viewportState.translateY
+  
+  // 处理放置
+  gameStore.handleCardDrop(screenX, screenY)
   gameStore.endStackDrag()
-  window.removeEventListener('mousemove', handleStackDragMove)
-  window.removeEventListener('mouseup', handleStackDragEnd)
+}
+
+// 处理舞台点击（空白区域）
+function handleStageClick() {
+  // 清除选择
+  gameStore.clearSelection()
+}
+
+// 处理缩放
+function handleZoom(delta: number) {
+  const newScale = gameStore.viewport.scale + delta
+  gameStore.engine.coordinate.scale = newScale
 }
 </script>
 
 <template>
   <div class="game-view">
-    <Viewport>
-      <CardGrid
-        :stacks="gameStore.currentMap.stacks"
-        :selected-stacks="gameStore.selection.selectedStacks"
-        :dragging-stack-id="gameStore.draggingStackId"
-        @card-click="handleCardClick"
-        @card-longpress="handleCardLongpress"
-        @stack-drag-start="handleStackDragStart"
-      />
-    </Viewport>
+    <!-- PixiJS 游戏渲染层 -->
+    <PixiGameRenderer
+      ref="rendererRef"
+      :stacks="gameStore.currentMap.stacks"
+      :selected-stacks="gameStore.selection.selectedStacks"
+      @stack-drag-start="handleStackDragStart"
+      @stack-drag-move="handleStackDragMove"
+      @stack-drag-end="handleStackDragEnd"
+      @stage-click="handleStageClick"
+    />
 
     <!-- 时间面板 / Time Panel -->
     <TimePanel />
     
     <MiniMap />
-    <ZoomControls />
+    <ZoomControls @zoom="handleZoom" />
     <HelpButton />
     <HelpModal />
     <DevToolbar />

@@ -9,11 +9,31 @@
  * - 结束拖拽 / End dragging
  * - 分离堆叠 / Separate stacks
  * - 合并堆叠 / Merge stacks
+ * - 槽位拖拽 / Slot dragging
  */
 
 import type { CardStack, DropResult } from '@/game/types'
 import { CoordinateModule } from './CoordinateModule'
 import { StackModule } from './StackModule'
+
+/**
+ * 放置目标类型
+ * Drop target type
+ */
+export type DropTargetType = 'stack' | 'slot' | 'none'
+
+/**
+ * 扩展的放置结果
+ * Extended drop result
+ */
+export interface ExtendedDropResult extends DropResult {
+  /** 放置目标类型 / Drop target type */
+  targetType?: DropTargetType
+  /** 目标槽位 ID / Target slot ID */
+  targetSlotId?: string
+  /** 目标面板 ID / Target panel ID */
+  targetPanelId?: string
+}
 
 /**
  * 拖拽状态
@@ -42,6 +62,29 @@ export interface DragContext {
   
   /** 是否是分离操作 / Whether this is a separation operation */
   isSeparating: boolean
+  
+  // ========== 槽位拖拽扩展 / Slot Drag Extension ==========
+  
+  /** 是否从槽位拖出 / Whether dragging from slot */
+  isDraggingFromSlot: boolean
+  
+  /** 来源槽位 ID / Source slot ID */
+  sourceSlotId: string | null
+  
+  /** 来源面板 ID / Source panel ID */
+  sourcePanelId: string | null
+  
+  /** 当前拖拽目标类型 / Current drop target type */
+  dropTargetType: DropTargetType
+  
+  /** 当前目标槽位 ID / Current target slot ID */
+  targetSlotId: string | null
+  
+  /** 当前目标面板 ID / Current target panel ID */
+  targetPanelId: string | null
+  
+  /** 是否可以放置到当前目标 / Whether can drop to current target */
+  canDropToTarget: boolean
 }
 
 /**
@@ -68,7 +111,15 @@ export class DragModule {
     startWorldX: 0,
     startWorldY: 0,
     draggedCardIndex: -1,
-    isSeparating: false
+    isSeparating: false,
+    // 槽位拖拽扩展 / Slot drag extension
+    isDraggingFromSlot: false,
+    sourceSlotId: null,
+    sourcePanelId: null,
+    dropTargetType: 'none',
+    targetSlotId: null,
+    targetPanelId: null,
+    canDropToTarget: false
   }
   
   constructor(coordinate: CoordinateModule, stack: StackModule) {
@@ -260,7 +311,15 @@ export class DragModule {
       startWorldX: 0,
       startWorldY: 0,
       draggedCardIndex: -1,
-      isSeparating: false
+      isSeparating: false,
+      // 槽位拖拽扩展 / Slot drag extension
+      isDraggingFromSlot: false,
+      sourceSlotId: null,
+      sourcePanelId: null,
+      dropTargetType: 'none',
+      targetSlotId: null,
+      targetPanelId: null,
+      canDropToTarget: false
     }
   }
   

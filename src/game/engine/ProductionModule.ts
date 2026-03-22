@@ -125,6 +125,14 @@ export class ProductionModule {
     
     if (!buildingData) return
     
+    // 面板类型建筑不进行生产
+    // Panel type buildings don't produce
+    if (buildingData.type === 'panel') return
+    
+    // 如果没有生产间隔或产出配置，不启动生产
+    // If no production interval or output config, don't start production
+    if (!buildingData.productionInterval || !buildingData.outputTypeId) return
+    
     // 如果已经有计时器在运行，不重复启动
     // If timer is already running, don't restart
     if (buildingData.productionTimerId) return
@@ -182,14 +190,16 @@ export class ProductionModule {
     
     // 产出卡牌
     // Spawn output card
-    this.createCardCallback({
-      buildingStack: stack,
-      outputConfig: {
-        typeId: buildingData.outputTypeId,
-        nameKey: buildingData.outputNameKey,
-        emoji: buildingData.outputEmoji
-      }
-    })
+    if (buildingData.outputTypeId && buildingData.outputNameKey && buildingData.outputEmoji) {
+      this.createCardCallback({
+        buildingStack: stack,
+        outputConfig: {
+          typeId: buildingData.outputTypeId,
+          nameKey: buildingData.outputNameKey,
+          emoji: buildingData.outputEmoji
+        }
+      })
+    }
     
     // 重新启动计时器（循环生产）
     // Restart timer (loop production)

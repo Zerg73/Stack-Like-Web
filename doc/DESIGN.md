@@ -23,12 +23,15 @@
 src/
 ├── assets/           # 静态资源
 ├── components/      # Vue 通用组件
-│   └── ui/          # UI 组件（卡片、弹窗等）
+│   └── ui/          # UI 组件（卡片、弹窗、面板等）
 ├── composables/      # Vue Composables（可复用逻辑）
 │   └── useKeyboardControls.ts  # 键盘快捷键控制
 ├── config/          # 配置文件
 │   ├── game.ts      # 游戏配置
-│   └── cardTypes.ts # 卡牌类型配置
+│   ├── cardTypes.ts # 卡牌类型配置
+│   ├── tags.ts      # 标签配置（分类、属性、方面）
+│   ├── panels.ts    # 面板配置
+│   └── recipes.ts   # 配方配置
 ├── game/            # 游戏核心逻辑
 │   ├── card/        # 卡牌系统
 │   │   ├── Card.vue      # 单个卡牌组件
@@ -45,11 +48,18 @@ src/
 │   │   ├── GameEngine.ts      # 引擎主入口
 │   │   ├── CoordinateModule.ts # 坐标系统模块
 │   │   ├── StackModule.ts     # 堆叠管理模块
-│   │   └── DragModule.ts      # 拖拽管理模块
+│   │   ├── DragModule.ts      # 拖拽管理模块
+│   │   ├── SlotModule.ts      # 槽位管理模块
+│   │   ├── PanelModule.ts     # 面板管理模块
+│   │   └── RecipeModule.ts    # 配方管理模块
 │   ├── events/      # 事件定义
 │   │   └── index.ts
 │   └── types/       # 类型定义
-│       └── index.ts
+│       ├── index.ts
+│       ├── panel.ts   # 面板类型
+│       ├── slot.ts    # 槽位类型
+│       ├── recipe.ts  # 配方类型
+│       └── tags.ts    # 标签类型
 ├── stores/          # Pinia 状态管理
 │   ├── saveStore.ts  # 存档管理
 │   ├── gameStore.ts  # 游戏状态
@@ -196,6 +206,59 @@ interface CardStack {
 - 帮助按钮和快捷键说明弹窗
 - 开发者工具栏
 
+### 8. 面板槽位系统 (Panel & Slot System)
+
+类似《密教模拟器》的面板槽位系统，允许玩家点击打开面板，将卡牌拖入槽位进行合成/操作。
+
+详见：[面板槽位系统文档](./PANEL_SLOT.md)
+
+#### 核心组件
+
+- **面板系统 (Panel)** - 可点击打开的浮动面板窗口
+- **槽位系统 (Slot)** - 面板内可接受卡牌拖入的槽位
+- **配方系统 (Recipe)** - 检测槽位内卡牌组合，触发对应效果
+- **标签系统 (Tag)** - 用于槽位匹配的分类、属性、方面
+
+#### 标签匹配系统
+
+采用混合标签系统，结合三种标签类型：
+
+| 标签类型 | 说明 | 示例 |
+|----------|------|------|
+| 分类标签 | 单选互斥 | `material`, `unit`, `knowledge` |
+| 属性标签 | 多选可叠加 | `edible`, `flammable`, `magical` |
+| 方面数值 | 数值条件 | `{ knowledge: 2, mystery: 3 }` |
+
+#### 数据结构
+
+```typescript
+// 槽位匹配规则 / Slot Match Rule
+interface SlotMatchRule {
+  category?: string | string[]           // 分类要求
+  requiredAttributes?: string[]          // 必需属性
+  excludedAttributes?: string[]          // 排除属性
+  requiredAspects?: Record<string, number>  // 方面数值要求
+}
+
+// 面板定义 / Panel Definition
+interface PanelDefinition {
+  id: string
+  nameKey: string
+  slots: SlotDefinition[]
+  outputSlot?: SlotDefinition
+  recipes: string[]
+}
+
+// 配方定义 / Recipe Definition
+interface RecipeDefinition {
+  id: string
+  nameKey: string
+  inputs: RecipeInput[]
+  outputs: RecipeOutput[]
+  duration?: number
+}
+```
+
 ## 组件通信
 
 ### Props & Events
@@ -260,12 +323,23 @@ interface CardStack {
 
 ## 待实现功能
 
+- [ ] 面板槽位系统
+  - [ ] 标签系统（分类、属性、方面）
+  - [ ] 槽位匹配逻辑
+  - [ ] 面板管理模块
+  - [ ] 配方系统
+  - [ ] 槽位拖拽交互
+  - [ ] 面板 UI 组件
 - [ ] 卡牌详情窗口
 - [ ] 卡牌内容区显示图片（而非emoji）
 - [ ] 地图切换
 - [ ] 时间/季节系统
 - [ ] MOD 系统
 - [ ] 存档保存/加载（游戏内）
+
+## PixiJS 迁移方案
+
+详见：[PIXJS_MIGRATION.md](./PIXJS_MIGRATION.md)
 
 ## 文档索引
 
@@ -278,6 +352,7 @@ interface CardStack {
 | [MINIMAP.md](./MINIMAP.md) | 小地图系统 |
 | [CARD_SYSTEM.md](./CARD_SYSTEM.md) | 卡牌系统 |
 | [I18N_PLAN.md](./I18N_PLAN.md) | 多语言系统设计 |
+| [PANEL_SLOT.md](./PANEL_SLOT.md) | 面板槽位系统 |
 
 ## 开发命令
 

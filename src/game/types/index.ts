@@ -5,12 +5,13 @@ export interface Position {
 
 /** 建筑运行时数据 / Building runtime data */
 export interface BuildingRuntimeData {
-  type: 'mine' | 'farm' | 'sawmill'  // 建筑类型 / Building type
+  type: 'mine' | 'farm' | 'sawmill' | 'panel'  // 建筑类型 / Building type
   productionTimerId?: string        // 生产计时器 ID / Production timer ID
-  productionInterval: number        // 生产间隔（游戏分钟）/ Production interval (game minutes)
-  outputTypeId: string             // 产出卡牌类型ID / Output card type ID
-  outputNameKey: string            // 产出卡牌名称 key / Output card name key
-  outputEmoji: string              // 产出卡牌 emoji / Output card emoji
+  productionInterval?: number       // 生产间隔（游戏分钟）/ Production interval (game minutes)
+  outputTypeId?: string             // 产出卡牌类型ID / Output card type ID
+  outputNameKey?: string            // 产出卡牌名称 key / Output card name key
+  outputEmoji?: string              // 产出卡牌 emoji / Output card emoji
+  panelId?: string                  // 关联的面板 ID / Associated panel ID
 }
 
 export interface CardStack {

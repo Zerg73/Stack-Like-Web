@@ -82,7 +82,10 @@
     "barracks": "Barracks",
     "barn": "Barn",
     "attic": "Attic",
-    "mine": "Mine"
+    "mine": "Mine",
+    "researchDesk": "Research Desk",
+    "workshop": "Workshop",
+    "altar": "Altar"
   },
   "locale": {
     "switchLanguage": "Switch Language",
@@ -105,5 +108,158 @@
     "month": "Month {month}",
     "day": "Day {day}",
     "date": "Year {year} Month {month} Day {day}"
+  },
+  "ui": {
+    "panel": {
+      "inputSlots": "Input Slots",
+      "outputSlot": "Output Slot",
+      "execute": "Execute",
+      "close": "Close"
+    },
+    "panelSlot": {
+      "dropHint": "Drop Card"
+    }
+  },
+  "categories": {
+    "material": "Material",
+    "material.description": "Basic resources and materials",
+    "unit": "Unit",
+    "unit.description": "Controllable characters and creatures",
+    "building": "Building",
+    "building.description": "Functional structures",
+    "knowledge": "Knowledge",
+    "knowledge.description": "Books, scrolls and knowledge",
+    "tool": "Tool",
+    "tool.description": "Usable tools and equipment",
+    "funds": "Funds",
+    "funds.description": "Coins and wealth",
+    "influence": "Influence",
+    "influence.description": "Social connections and reputation"
+  },
+  "attributes": {
+    "edible": "Edible",
+    "edible.description": "Can be consumed as food",
+    "flammable": "Flammable",
+    "flammable.description": "Can be ignited",
+    "craftable": "Craftable",
+    "craftable.description": "Can be used for crafting",
+    "valuable": "Valuable",
+    "valuable.description": "Has high value",
+    "magical": "Magical",
+    "magical.description": "Has magical properties",
+    "combatant": "Combatant",
+    "combatant.description": "Can participate in combat",
+    "worker": "Worker",
+    "worker.description": "Can perform labor",
+    "scholar": "Scholar",
+    "scholar.description": "Can conduct research",
+    "habitable": "Habitable",
+    "habitable.description": "Can house residents",
+    "productive": "Productive",
+    "productive.description": "Can produce resources",
+    "ancient": "Ancient",
+    "ancient.description": "Has ancient origins",
+    "forbidden": "Forbidden",
+    "forbidden.description": "Involves forbidden knowledge"
+  },
+  "aspects": {
+    "knowledge": "Knowledge",
+    "knowledge.description": "Learning and wisdom",
+    "power": "Power",
+    "power.description": "Physical and magical strength",
+    "mystery": "Mystery",
+    "mystery.description": "Mystery and the unknown",
+    "passion": "Passion",
+    "passion.description": "Emotion and desire",
+    "labor": "Labor",
+    "labor.description": "Physical work capacity",
+    "wealth": "Wealth",
+    "wealth.description": "Money and resources",
+    "lantern": "Lantern",
+    "lantern.description": "Light and revelation",
+    "forge": "Forge",
+    "forge.description": "Transformation and creation",
+    "edge": "Edge",
+    "edge.description": "Combat and conquest",
+    "winter": "Winter",
+    "winter.description": "Silence and endings",
+    "heart": "Heart",
+    "heart.description": "Protection and continuity",
+    "grail": "Grail",
+    "grail.description": "Desire and flesh",
+    "moth": "Moth",
+    "moth.description": "Change and seeking",
+    "knock": "Knock",
+    "knock.description": "Opening and passage"
+  },
+  "panels": {
+    "research": {
+      "name": "Research Desk",
+      "description": "Study knowledge, gain wisdom",
+      "slots": {
+        "book": "Book",
+        "funds": "Funds",
+        "output": "Research Results"
+      }
+    },
+    "crafting": {
+      "name": "Workshop",
+      "description": "Craft items, forge equipment",
+      "slots": {
+        "worker": "Worker",
+        "material": "Material",
+        "tool": "Tool",
+        "output": "Crafting Results"
+      }
+    },
+    "ritual": {
+      "name": "Altar",
+      "description": "Perform rituals, summon powers",
+      "slots": {
+        "offering": "Offering",
+        "influence": "Influence",
+        "output": "Ritual Results"
+      }
+    }
+  },
+  "recipes": {
+    "research_basic": {
+      "name": "Basic Research",
+      "description": "Study books to gain knowledge fragments"
+    },
+    "research_advanced": {
+      "name": "Advanced Research",
+      "description": "Invest funds for deeper research",
+      "condition": "Chance to gain higher knowledge"
+    },
+    "craft_duplicate": {
+      "name": "Duplicate Material",
+      "description": "Worker assists to duplicate a material, takes 5 minutes"
+    },
+    "craft_basic": {
+      "name": "Basic Crafting",
+      "description": "Use materials to craft basic items"
+    },
+    "craft_advanced": {
+      "name": "Advanced Crafting",
+      "description": "Use tools to craft fine items"
+    },
+    "ritual_summon": {
+      "name": "Summoning Ritual",
+      "description": "Summon mysterious entities",
+      "condition": "Chance of successful summoning"
+    },
+    "ritual_sacrifice": {
+      "name": "Sacrifice Ritual",
+      "description": "Sacrifice offerings for power"
+    }
+  },
+  "cards": {
+    "knowledge_fragment": "Knowledge Fragment",
+    "knowledge_essence": "Knowledge Essence",
+    "crafted_item": "Crafted Item",
+    "masterwork": "Masterwork",
+    "summoned_entity": "Summoned Entity",
+    "power_fragment": "Power Fragment"
   }
 }

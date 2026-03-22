@@ -115,14 +115,16 @@ onUnmounted(() => {
 
 // 名字栏鼠标按下事件
 function handleNameStripMouseDown(e: MouseEvent) {
-  e.preventDefault()
+  // 不调用 preventDefault()，让 click 事件能够触发
+  // Don't call preventDefault(), let click event fire
   e.stopPropagation()
   emit('dragStart', e)
 }
 
 // 内容区域鼠标按下事件（只有最底层卡牌有内容区域）
 function handleContentMouseDown(e: MouseEvent) {
-  e.preventDefault()
+  // 不调用 preventDefault()，让 click 事件能够触发
+  // Don't call preventDefault(), let click event fire
   e.stopPropagation()
   emit('dragStart', e)
 }

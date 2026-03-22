@@ -82,7 +82,10 @@
     "barracks": "兵营",
     "barn": "谷仓",
     "attic": "阁楼",
-    "mine": "矿井"
+    "mine": "矿井",
+    "researchDesk": "研究台",
+    "workshop": "工坊",
+    "altar": "祭坛"
   },
   "locale": {
     "switchLanguage": "切换语言",
@@ -105,5 +108,158 @@
     "month": "{month}月",
     "day": "{day}日",
     "date": "第{year}年{month}月{day}日"
+  },
+  "ui": {
+    "panel": {
+      "inputSlots": "输入槽位",
+      "outputSlot": "输出槽位",
+      "execute": "执行",
+      "close": "关闭"
+    },
+    "panelSlot": {
+      "dropHint": "拖入卡牌"
+    }
+  },
+  "categories": {
+    "material": "素材",
+    "material.description": "基础资源和材料",
+    "unit": "单位",
+    "unit.description": "可控制的角色和生物",
+    "building": "建筑",
+    "building.description": "功能性建筑物",
+    "knowledge": "知识",
+    "knowledge.description": "书籍、卷轴和知识",
+    "tool": "工具",
+    "tool.description": "可使用的工具和装备",
+    "funds": "资金",
+    "funds.description": "金币和财富",
+    "influence": "影响力",
+    "influence.description": "社会关系和声望"
+  },
+  "attributes": {
+    "edible": "可食用",
+    "edible.description": "可以作为食物",
+    "flammable": "易燃",
+    "flammable.description": "可以被点燃",
+    "craftable": "可制作",
+    "craftable.description": "可以用于制作",
+    "valuable": "贵重",
+    "valuable.description": "具有较高价值",
+    "magical": "魔法",
+    "magical.description": "具有魔法属性",
+    "combatant": "战斗",
+    "combatant.description": "可以参与战斗",
+    "worker": "劳作",
+    "worker.description": "可以进行生产劳动",
+    "scholar": "学者",
+    "scholar.description": "可以进行研究",
+    "habitable": "可居住",
+    "habitable.description": "可以容纳居民",
+    "productive": "生产",
+    "productive.description": "可以产出资源",
+    "ancient": "古老",
+    "ancient.description": "具有悠久历史",
+    "forbidden": "禁忌",
+    "forbidden.description": "涉及禁忌知识"
+  },
+  "aspects": {
+    "knowledge": "知识",
+    "knowledge.description": "学识和智慧",
+    "power": "力量",
+    "power.description": "物理和魔法力量",
+    "mystery": "神秘",
+    "mystery.description": "神秘和未知",
+    "passion": "热情",
+    "passion.description": "情感和欲望",
+    "labor": "劳力",
+    "labor.description": "体力劳动能力",
+    "wealth": "财富",
+    "wealth.description": "金钱和资源",
+    "lantern": "灯火",
+    "lantern.description": "光明与启示",
+    "forge": "熔炉",
+    "forge.description": "转化与创造",
+    "edge": "锋刃",
+    "edge.description": "战斗与征服",
+    "winter": "凛冬",
+    "winter.description": "寂静与终结",
+    "heart": "之心",
+    "heart.description": "守护与延续",
+    "grail": "圣杯",
+    "grail.description": "欲望与血肉",
+    "moth": "飞蛾",
+    "moth.description": "变化与追寻",
+    "knock": "叩门",
+    "knock.description": "开启与通行"
+  },
+  "panels": {
+    "research": {
+      "name": "研究台",
+      "description": "研究知识，获取智慧",
+      "slots": {
+        "book": "书籍",
+        "funds": "资金",
+        "output": "研究成果"
+      }
+    },
+    "crafting": {
+      "name": "工坊",
+      "description": "制作物品，打造装备",
+      "slots": {
+        "worker": "角色",
+        "material": "材料",
+        "tool": "工具",
+        "output": "制作成果"
+      }
+    },
+    "ritual": {
+      "name": "祭坛",
+      "description": "进行仪式，召唤力量",
+      "slots": {
+        "offering": "祭品",
+        "influence": "影响力",
+        "output": "仪式结果"
+      }
+    }
+  },
+  "recipes": {
+    "research_basic": {
+      "name": "基础研究",
+      "description": "研究书籍获取知识碎片"
+    },
+    "research_advanced": {
+      "name": "深度研究",
+      "description": "投入资金进行深度研究",
+      "condition": "有概率获得更高级的知识"
+    },
+    "craft_duplicate": {
+      "name": "复制素材",
+      "description": "角色协助复制一份素材，耗时5分钟"
+    },
+    "craft_basic": {
+      "name": "基础制作",
+      "description": "使用材料制作基础物品"
+    },
+    "craft_advanced": {
+      "name": "精工制作",
+      "description": "使用工具制作精良物品"
+    },
+    "ritual_summon": {
+      "name": "召唤仪式",
+      "description": "召唤神秘存在",
+      "condition": "有概率召唤成功"
+    },
+    "ritual_sacrifice": {
+      "name": "献祭仪式",
+      "description": "献祭祭品获取力量"
+    }
+  },
+  "cards": {
+    "knowledge_fragment": "知识碎片",
+    "knowledge_essence": "知识精华",
+    "crafted_item": "制成品",
+    "masterwork": "杰作",
+    "summoned_entity": "召唤物",
+    "power_fragment": "力量碎片"
   }
 }

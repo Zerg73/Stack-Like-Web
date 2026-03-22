@@ -57,10 +57,15 @@ function cancelDelete() {
 
 const emit = defineEmits<{
   startGame: [slotId: string]
+  showPixiDemo: []
 }>()
 
 function handleStartGame(slot: SaveSlot) {
   emit('startGame', slot.id)
+}
+
+function handleShowPixiDemo() {
+  emit('showPixiDemo')
 }
 
 function triggerImport() {
@@ -109,6 +114,9 @@ async function handleFileChange(event: Event) {
     <footer class="action-bar">
       <button class="action-btn lang-btn" @click="localeStore.toggleLocale()">
         🌐 {{ localeStore.localeName }}
+      </button>
+      <button class="action-btn pixi-btn" @click="handleShowPixiDemo">
+        🎮 PixiJS 演示
       </button>
       <button class="action-btn" @click="triggerImport">
         📥 {{ t('home.importSave') }}
@@ -229,5 +237,17 @@ async function handleFileChange(event: Event) {
 
 .lang-btn {
   min-width: 120px;
+}
+
+.pixi-btn {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  border-color: transparent;
+  color: white;
+}
+
+.pixi-btn:hover {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  border-color: transparent;
+  color: white;
 }
 </style>
