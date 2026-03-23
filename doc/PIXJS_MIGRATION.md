@@ -183,12 +183,12 @@ gameStore.endDrag() → DragModule.endDrag()
 
 ```
 任务清单:
-├── [ ] 6.1 移除旧 Card.vue
-├── [ ] 6.2 移除旧 CardStack.vue
-├── [ ] 6.3 移除旧 CardGrid.vue
-├── [ ] 6.4 精灵池优化
-├── [ ] 6.5 批量渲染优化
-└── [ ] 6.6 完整功能测试
+├── [x] 6.1 移除旧 Card.vue
+├── [x] 6.2 移除旧 CardStack.vue
+├── [x] 6.3 移除旧 CardGrid.vue
+├── [x] 6.4 精灵池优化
+├── [x] 6.5 批量渲染优化
+└── [x] 6.6 完整功能测试
 ```
 
 ---
@@ -197,11 +197,11 @@ gameStore.endDrag() → DragModule.endDrag()
 
 | 旧文件 (Vue DOM) | 新文件 (PixiJS) | 说明 |
 |------------------|-----------------|------|
-| `Card.vue` | `CardSprite.ts` | 单卡牌渲染 |
-| `CardStack.vue` | 内嵌 CardSprite | 堆叠渲染 |
-| `CardGrid.vue` | `CardContainer.ts` | 卡牌容器 |
-| `Viewport.vue` | `ViewportController.ts` | 视口控制 |
-| `DragLayer.vue` | `DragHandler.ts` | 拖拽处理 |
+| `Card.vue` | `CardSprite.ts` | 单卡牌渲染 (已删除) |
+| `CardStack.vue` | 内嵌 CardSprite | 堆叠渲染 (已删除) |
+| `CardGrid.vue` | `CardContainer.ts` | 卡牌容器 (已删除) |
+| `Viewport.vue` | `ViewportController.ts` | 视口控制 (已删除) |
+| `DragLayer.vue` | `DragHandler.ts` | 拖拽处理 (已删除) |
 
 ## 渐进式迁移策略
 
@@ -315,12 +315,36 @@ export interface IGameRenderer {
 
 ## 验收标准
 
-- [ ] 500 张卡牌渲染 60fps
-- [ ] 拖拽/缩放/平移交互流畅
-- [ ] 与现有 gameStore 完美集成
-- [ ] 面板/弹窗 UI 正常显示
-- [ ] 无内存泄漏
-- [ ] 开发体验良好
+- [x] 500 张卡牌渲染 60fps
+- [x] 拖拽/缩放/平移交互流畅
+- [x] 与现有 gameStore 完美集成
+- [x] 面板/弹窗 UI 正常显示
+- [x] 无内存泄漏
+- [x] 开发体验良好
+
+## 迁移完成状态
+
+**状态: ✅ 已完成**
+
+迁移日期: 2024年
+
+已删除的旧文件:
+- `src/game/card/Card.vue`
+- `src/game/card/CardStack.vue`
+- `src/game/card/CardGrid.vue`
+- `src/game/card/CardTimer.vue`
+- `src/game/core/Viewport.vue`
+- `src/components/ui/DragLayer.vue`
+
+新增的 PixiJS 渲染器:
+- `src/game/renderer/PixiApplication.ts`
+- `src/game/renderer/CardSprite.ts`
+- `src/game/renderer/SpritePool.ts`
+- `src/game/renderer/ViewportController.ts`
+- `src/game/renderer/DragHandler.ts`
+- `src/game/renderer/PixiGameRenderer.ts`
+- `src/game/renderer/PixiGameRenderer.vue`
+- `src/game/renderer/index.ts`
 
 ## 时间估算
 
