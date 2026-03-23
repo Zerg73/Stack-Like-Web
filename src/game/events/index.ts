@@ -162,33 +162,6 @@ export class StackDragStartEvent extends GameEvent {
   }
 }
 
-// ========== 事件类型映射（用于 Vue 组件 defineEmits） ==========
-
-/**
- * Card.vue 组件事件类型
- */
-export interface CardComponentEvents {
-  click: [event: CardClickEvent]
-  dragStart: [event: CardDragStartEvent]
-}
-
-/**
- * CardStack.vue 组件事件类型
- */
-export interface CardStackComponentEvents {
-  click: [event: StackClickEvent]
-  dragStart: [event: StackDragStartEvent]
-}
-
-/**
- * CardGrid.vue 组件事件类型
- */
-export interface CardGridComponentEvents {
-  cardClick: [event: CardClickEvent]
-  cardLongpress: [event: CardLongpressEvent]
-  stackDragStart: [event: StackDragStartEvent]
-}
-
 // ========== 事件类型守卫 ==========
 
 /** 检查是否是卡牌点击事件 */
